@@ -1,11 +1,13 @@
-<Window x:Class="ConsoleApp1.Views.MainWindow"
+<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:ConsoleApp1.Views"
+        xmlns:av="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="av" x:Class="ConsoleApp1.Views.MainWindow"
         Title="AES Encryption Tool" Height="800" Width="1100"
         MinHeight="600" MinWidth="800"
         WindowStartupLocation="CenterScreen"
-        Background="#1E1E2E">
+        Background="#1E1E2E"
+        Icon="/app_icon.png">
     <Window.Resources>
         <!-- Color Palette - Modern Dark Theme -->
         <SolidColorBrush x:Key="PrimaryBg" Color="#1E1E2E"/>
@@ -20,9 +22,10 @@
         <SolidColorBrush x:Key="TextPrimary" Color="#CDD6F4"/>
         <SolidColorBrush x:Key="TextSecondary" Color="#A6ADC8"/>
         <SolidColorBrush x:Key="BorderColor" Color="#45475A"/>
-        
+        <SolidColorBrush x:Key="SelectionBg" Color="#626880"/>
+
         <!-- Button Style -->
-        <Style x:Key="ModernButton" TargetType="Button">
+        <Style x:Key="ModernButton" TargetType="{x:Type Button}">
             <Setter Property="Background" Value="{StaticResource AccentBlue}"/>
             <Setter Property="Foreground" Value="#1E1E2E"/>
             <Setter Property="Padding" Value="16,8"/>
@@ -33,8 +36,10 @@
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="Button">
+                    <ControlTemplate TargetType="{x:Type Button}">
                         <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="6" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
@@ -50,22 +55,22 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        
+
         <!-- Secondary Button Style -->
-        <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
+        <Style x:Key="SecondaryButton" TargetType="{x:Type Button}" BasedOn="{StaticResource ModernButton}">
             <Setter Property="Background" Value="{StaticResource CardBg}"/>
             <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
         </Style>
-        
+
         <!-- Small Button Style -->
-        <Style x:Key="SmallButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+        <Style x:Key="SmallButton" TargetType="{x:Type Button}" BasedOn="{StaticResource SecondaryButton}">
             <Setter Property="Padding" Value="8,4"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Margin" Value="2"/>
         </Style>
-        
+
         <!-- TextBox Style -->
-        <Style x:Key="InputTextBox" TargetType="TextBox">
+        <Style x:Key="InputTextBox" TargetType="{x:Type TextBox}">
             <Setter Property="Background" Value="#252536"/>
             <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
             <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
@@ -78,7 +83,7 @@
             <Setter Property="SelectionBrush" Value="{StaticResource AccentBlue}"/>
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="TextBox">
+                    <ControlTemplate TargetType="{x:Type TextBox}">
                         <Border x:Name="border" Background="{TemplateBinding Background}" 
                                 BorderBrush="{TemplateBinding BorderBrush}" 
                                 BorderThickness="{TemplateBinding BorderThickness}"
@@ -97,16 +102,16 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        
+
         <!-- Label Style -->
-        <Style TargetType="Label">
+        <Style TargetType="{x:Type Label}">
             <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
             <Setter Property="Padding" Value="0,5"/>
             <Setter Property="FontSize" Value="12"/>
         </Style>
-        
+
         <!-- Star Button Style -->
-        <Style x:Key="StarButton" TargetType="Button">
+        <Style x:Key="StarButton" TargetType="{x:Type Button}">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="FontSize" Value="16"/>
@@ -115,7 +120,7 @@
             <Setter Property="Foreground" Value="{StaticResource AccentYellow}"/>
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="Button">
+                    <ControlTemplate TargetType="{x:Type Button}">
                         <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
@@ -123,14 +128,14 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        
+
         <!-- CheckBox Style for Dark Theme -->
-        <Style TargetType="CheckBox">
+        <Style TargetType="{x:Type CheckBox}">
             <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
     </Window.Resources>
-    
+
     <Grid Margin="15">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -140,51 +145,65 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Key/IV Section -->
-        <Expander Grid.Row="0" Header="🔐 Key/IV Configuration (Base64 Format)" Margin="0,0,0,10" 
-                  Foreground="{StaticResource TextPrimary}" IsExpanded="False">
-            <Border Background="{StaticResource CardBg}" CornerRadius="8" Padding="15" Margin="0,10,0,0">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+        <!-- Key/IV Section and Settings -->
+        <Grid Grid.Row="0" Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
-                    <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                        <Label Content="Key (Base64):"/>
-                        <Grid>
-                            <TextBox x:Name="KeyTextBox" Style="{StaticResource InputTextBox}"
+            <Expander Grid.Column="0" Header="🔐 Key/IV Configuration (Plaintext)" 
+                      Foreground="{StaticResource TextPrimary}" IsExpanded="False" Margin="0,0,10,0">
+                <Border Background="{StaticResource CardBg}" CornerRadius="8" Padding="15" Margin="0,10,0,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,10,10">
+                            <Label Content="Key (16/24/32 chars):"/>
+                            <Grid>
+                                <TextBox x:Name="KeyTextBox" Style="{StaticResource InputTextBox}"
                                      TextChanged="KeyTextBox_TextChanged"/>
-                            <Button x:Name="KeyShowButton" Content="👁️" Style="{StaticResource SmallButton}"
+                                <Button x:Name="KeyShowButton" Content="👁️" Style="{StaticResource SmallButton}"
                                     HorizontalAlignment="Right" VerticalAlignment="Center"
                                     Width="35" Margin="0,5,8,5" Click="KeyShowButton_Click"
                                     ToolTip="Show/Hide Key"/>
-                        </Grid>
-                    </StackPanel>
+                            </Grid>
+                        </StackPanel>
 
-                    <StackPanel Grid.Column="1" Margin="10,0,10,0">
-                        <Label Content="IV (Base64):"/>
-                        <Grid>
-                            <TextBox x:Name="IVTextBox" Style="{StaticResource InputTextBox}"
+                        <StackPanel Grid.Row="0" Grid.Column="1" Margin="10,0,0,10">
+                            <Label Content="IV (16 chars):"/>
+                            <Grid>
+                                <TextBox x:Name="IVTextBox" Style="{StaticResource InputTextBox}"
                                      TextChanged="IVTextBox_TextChanged"/>
-                            <Button x:Name="IVShowButton" Content="👁️" Style="{StaticResource SmallButton}"
+                                <Button x:Name="IVShowButton" Content="👁️" Style="{StaticResource SmallButton}"
                                     HorizontalAlignment="Right" VerticalAlignment="Center"
                                     Width="35" Margin="0,5,8,5" Click="IVShowButton_Click"
                                     ToolTip="Show/Hide IV"/>
-                        </Grid>
-                    </StackPanel>
+                            </Grid>
+                        </StackPanel>
 
-                    <StackPanel Grid.Column="2" VerticalAlignment="Bottom" Margin="10,0,0,5">
-                        <Button Content="💾 Save" Style="{StaticResource ModernButton}"
-                                Background="{StaticResource AccentGreen}" Click="SaveKeysButton_Click"/>
-                        <Button Content="🔄 Reset" Style="{StaticResource SecondaryButton}"
-                                Click="ResetKeysButton_Click" Margin="5,5,5,0"
-                                ToolTip="Reset keys to default values"/>
-                    </StackPanel>
-                </Grid>
-            </Border>
-        </Expander>
+                        <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Content="🔄 Reset" Style="{StaticResource SecondaryButton}"
+                                Click="ResetKeysButton_Click" Margin="0,0,5,0"
+                                ToolTip="Reset to default keys"/>
+                            <Button Content="📌 Set Default" Style="{StaticResource SecondaryButton}"
+                                Click="SetDefaultKeysButton_Click" Margin="5,0,5,0"
+                                ToolTip="Set current keys as new default"/>
+                            <Button Content="💾 Save" Style="{StaticResource ModernButton}"
+                                Background="{StaticResource AccentGreen}" Click="SaveKeysButton_Click"
+                                ToolTip="Save keys to encrypted config" Margin="5,0,0,0"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Expander>
+        </Grid>
 
         <!-- Main Encrypt/Decrypt Section -->
         <Grid Grid.Row="1" Margin="0,0,0,10">
@@ -231,9 +250,9 @@
                                 Background="{StaticResource AccentGreen}" Click="EncryptButton_Click"/>
                         <Button Content="Clear" Style="{StaticResource SecondaryButton}"
                                 Click="EncryptClearButton_Click"/>
-                        <Button x:Name="EncryptFavoriteButton" Content="☆" Style="{StaticResource StarButton}"
+                        <Button x:Name="EncryptFavoriteButton" Content="🏷️" Style="{StaticResource StarButton}"
                                 Click="EncryptFavoriteButton_Click" Margin="10,0,0,0"
-                                ToolTip="Mark as favorite"/>
+                                ToolTip="Add to bookmarks"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="3">
@@ -246,7 +265,7 @@
 
                     <StackPanel Grid.Row="4" Margin="0,10,0,0">
                         <Label Content="Note (optional):" FontSize="13"/>
-                        <TextBox x:Name="EncryptNoteTextBox" Style="{StaticResource InputTextBox}" Height="35"/>
+                        <TextBox x:Name="EncryptNoteTextBox" Style="{StaticResource InputTextBox}" Height="45"/>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -288,9 +307,9 @@
                                 Background="{StaticResource AccentPurple}" Click="DecryptButton_Click"/>
                         <Button Content="Clear" Style="{StaticResource SecondaryButton}"
                                 Click="DecryptClearButton_Click"/>
-                        <Button x:Name="DecryptFavoriteButton" Content="☆" Style="{StaticResource StarButton}"
+                        <Button x:Name="DecryptFavoriteButton" Content="🏷️" Style="{StaticResource StarButton}"
                                 Click="DecryptFavoriteButton_Click" Margin="10,0,0,0"
-                                ToolTip="Mark as favorite"/>
+                                ToolTip="Add to bookmarks"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="3">
@@ -303,7 +322,7 @@
 
                     <StackPanel Grid.Row="4" Margin="0,10,0,0">
                         <Label Content="Note (optional):" FontSize="13"/>
-                        <TextBox x:Name="DecryptNoteTextBox" Style="{StaticResource InputTextBox}" Height="35"/>
+                        <TextBox x:Name="DecryptNoteTextBox" Style="{StaticResource InputTextBox}" Height="45"/>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -316,17 +335,19 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                
+
                 <Grid Grid.Row="0" Margin="0,0,0,10">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    
-                    <TextBlock Grid.Column="0" Text="📜 History" FontWeight="Bold" FontSize="14" 
-                               Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center"/>
-                    
+
+                    <TextBlock x:Name="HistoryLabel" Grid.Column="0" Text="📜 History" FontWeight="Bold" FontSize="14" 
+                               Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center"
+                               Cursor="Hand" MouseLeftButtonDown="HistoryLabel_Click"
+                               ToolTip="Click to show all history"/>
+
                     <Grid Grid.Column="1" Margin="20,0">
                         <TextBox x:Name="HistorySearchTextBox" Style="{StaticResource InputTextBox}"
                                  Height="35" TextChanged="HistorySearchTextBox_TextChanged"
@@ -336,7 +357,7 @@
                                    Margin="15,0,0,0" FontSize="13"
                                    VerticalAlignment="Center">
                             <TextBlock.Style>
-                                <Style TargetType="TextBlock">
+                                <Style TargetType="{x:Type TextBlock}">
                                     <Setter Property="Visibility" Value="Collapsed"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding Text, ElementName=HistorySearchTextBox}" Value="">
@@ -347,19 +368,19 @@
                             </TextBlock.Style>
                         </TextBlock>
                     </Grid>
-                    
+
                     <StackPanel Grid.Column="2" Orientation="Horizontal">
-                        <Button x:Name="ShowFavoritesButton" Content="⭐ Favorites" 
-                                Style="{StaticResource SecondaryButton}" Click="ShowFavoritesButton_Click"/>
-                        <Button Content="📋 All" Style="{StaticResource SecondaryButton}" 
-                                Click="ShowAllHistoryButton_Click"/>
+                        <Button x:Name="ShowFavoritesButton" Content="🔖 Bookmarks" 
+                                Style="{StaticResource SecondaryButton}" Click="ShowBookmarksButton_Click"
+                                BorderBrush="#FF8F8D8D" BorderThickness="1"/>
                     </StackPanel>
                 </Grid>
-                
+
                 <DataGrid x:Name="HistoryDataGrid" Grid.Row="1" 
-                          AutoGenerateColumns="False" IsReadOnly="True"
+                          AutoGenerateColumns="False" IsReadOnly="False"
                           SelectionMode="Single" 
                           MouseDoubleClick="HistoryDataGrid_MouseDoubleClick"
+                          CellEditEnding="HistoryDataGrid_CellEditEnding"
                           Background="Transparent" BorderThickness="0"
                           RowBackground="#252536"
                           AlternatingRowBackground="{StaticResource CardBg}"
@@ -367,36 +388,58 @@
                           GridLinesVisibility="None"
                           HeadersVisibility="Column"
                           CanUserResizeRows="False"
+                          CanUserAddRows="False"
                           VerticalScrollBarVisibility="Auto"
                           HorizontalScrollBarVisibility="Auto">
                     <DataGrid.ColumnHeaderStyle>
-                        <Style TargetType="DataGridColumnHeader">
+                        <Style TargetType="{x:Type DataGridColumnHeader}">
                             <Setter Property="Background" Value="#1E1E2E"/>
                             <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
-                            <Setter Property="Padding" Value="12,10"/>
-                            <Setter Property="BorderThickness" Value="0"/>
                             <Setter Property="FontWeight" Value="SemiBold"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type DataGridColumnHeader}">
+                                        <Grid>
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    Padding="8,10">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <Thumb x:Name="PART_RightHeaderGripper" HorizontalAlignment="Right" 
+                                                   Width="5" Cursor="SizeWE" Background="Transparent">
+                                                <Thumb.Template>
+                                                    <ControlTemplate TargetType="{x:Type Thumb}">
+                                                        <Border Background="Transparent" Padding="{TemplateBinding Padding}"/>
+                                                    </ControlTemplate>
+                                                </Thumb.Template>
+                                            </Thumb>
+                                            <Rectangle Width="1" HorizontalAlignment="Right" Fill="#7F849C" Opacity="0.3" 
+                                                       SnapsToDevicePixels="True" IsHitTestVisible="False"/>
+                                        </Grid>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
                         </Style>
                     </DataGrid.ColumnHeaderStyle>
                     <DataGrid.RowStyle>
-                        <Style TargetType="DataGridRow">
+                        <Style TargetType="{x:Type DataGridRow}">
                             <Setter Property="Height" Value="40"/>
                             <Style.Triggers>
-                                <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Background" Value="{StaticResource AccentBlue}"/>
-                                </Trigger>
+                                <!-- Triggers removed to rely on Cell selection for visibility -->
                             </Style.Triggers>
                         </Style>
                     </DataGrid.RowStyle>
                     <DataGrid.CellStyle>
-                        <Style TargetType="DataGridCell">
+                        <Style TargetType="{x:Type DataGridCell}">
                             <Setter Property="Padding" Value="12,8"/>
                             <Setter Property="BorderThickness" Value="0"/>
                             <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
-                            <Setter Property="VerticalAlignment" Value="Center"/>
+                            <Setter Property="VerticalAlignment" Value="Stretch"/>
                             <Setter Property="Template">
                                 <Setter.Value>
-                                    <ControlTemplate TargetType="DataGridCell">
+                                    <ControlTemplate TargetType="{x:Type DataGridCell}">
                                         <Border Background="{TemplateBinding Background}" 
                                                 Padding="{TemplateBinding Padding}">
                                             <ContentPresenter VerticalAlignment="Center"/>
@@ -406,58 +449,90 @@
                             </Setter>
                             <Style.Triggers>
                                 <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Background" Value="{StaticResource AccentBlue}"/>
-                                    <Setter Property="Foreground" Value="#1E1E2E"/>
+                                    <Setter Property="Background" Value="{StaticResource SelectionBg}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
                     </DataGrid.CellStyle>
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Time" 
-                            Binding="{Binding Timestamp, StringFormat='{}{0:MM/dd HH:mm}'}" Width="100"/>
-                        <DataGridTextColumn Header="Op" Binding="{Binding Operation}" Width="70"/>
-                        <DataGridTextColumn Header="Input" Binding="{Binding Input}" Width="*">
+                        <DataGridTextColumn Header="Time" Binding="{Binding Timestamp, StringFormat=\{0:MM/dd HH:mm\}}" 
+                                            Width="90" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Op" Binding="{Binding Operation}" Width="70" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Input" Binding="{Binding Input}" Width="*" MinWidth="100" IsReadOnly="True">
                             <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
+                                <Style TargetType="{x:Type TextBlock}">
                                     <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
                                     <Setter Property="ToolTip" Value="{Binding Input}"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
-                        <DataGridTextColumn Header="Output" Binding="{Binding Output}" Width="*">
+                        <DataGridTextColumn Header="Output" Binding="{Binding Output}" Width="*" MinWidth="100" IsReadOnly="True">
                             <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
+                                <Style TargetType="{x:Type TextBlock}">
                                     <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
                                     <Setter Property="ToolTip" Value="{Binding Output}"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
-                        <DataGridTextColumn Header="Note" Binding="{Binding Note}" Width="120">
+                        <DataGridTextColumn Header="Note" Binding="{Binding Note}" Width="100" MinWidth="60" IsReadOnly="False">
                             <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
+                                <Style TargetType="{x:Type TextBlock}">
                                     <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
                                     <Setter Property="ToolTip" Value="{Binding Note}"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
+                            <DataGridTextColumn.EditingElementStyle>
+                                <Style TargetType="{x:Type TextBox}">
+                                    <Setter Property="Padding" Value="0"/>
+                                    <Setter Property="Background" Value="#252536"/>
+                                    <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                </Style>
+                            </DataGridTextColumn.EditingElementStyle>
                         </DataGridTextColumn>
-                        <DataGridTemplateColumn Header="⭐" Width="40">
+                        <DataGridTemplateColumn Header="🔖" Width="50" MinWidth="50" MaxWidth="50" CanUserResize="False">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Button Content="{Binding IsFavorite, Converter={x:Static local:BoolToStarConverter.Instance}}"
-                                            Style="{StaticResource StarButton}"
+                                    <Button Content="{Binding IsFavorite, Converter={x:Static local:BoolToBookmarkConverter.Instance}}"
                                             FontSize="14"
                                             Click="HistoryFavoriteButton_Click"
-                                            Tag="{Binding}"/>
+                                            Tag="{Binding}">
+                                        <Button.Style>
+                                            <Style TargetType="Button" BasedOn="{StaticResource StarButton}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsFavorite}" Value="True">
+                                                        <Setter Property="ToolTip" Value="Remove bookmark"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsFavorite}" Value="False">
+                                                        <Setter Property="ToolTip" Value="Add to bookmarks"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTemplateColumn Header="📋" Width="40">
+
+                        <DataGridTemplateColumn Header="📋" Width="50" MinWidth="50" MaxWidth="50" CanUserResize="False">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Button Content="📋" Style="{StaticResource StarButton}"
                                             FontSize="12"
                                             Click="HistoryCopyButton_Click" Tag="{Binding}"
                                             ToolTip="Copy output"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="🗑️" Width="50" MinWidth="50" MaxWidth="50" CanUserResize="False">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="🗑️" Style="{StaticResource StarButton}"
+                                            FontSize="12"
+                                            Click="HistoryDeleteButton_Click" Tag="{Binding}"
+                                            ToolTip="Delete this item permanently"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -485,8 +560,9 @@
                         <DataTemplate>
                             <Button Style="{StaticResource SmallButton}" 
                                     Click="RecentItemButton_Click" Tag="{Binding}"
-                                    MaxWidth="180" ToolTip="{Binding Output}">
-                                <TextBlock Text="{Binding Output}" TextTrimming="CharacterEllipsis" 
+                                    MaxWidth="200" ToolTip="{Binding Output}">
+                                <TextBlock Text="{Binding Converter={x:Static local:NoteOrOutputConverter.Instance}}" 
+                                           TextTrimming="CharacterEllipsis" 
                                            FontFamily="Consolas" FontSize="11"/>
                             </Button>
                         </DataTemplate>
@@ -505,8 +581,8 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock x:Name="StatusTextBlock" Text="✓ Ready" FontSize="13"
                            Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
-                <Button Grid.Column="1" Content="⚙️ Settings" Style="{StaticResource SmallButton}"
-                        Click="SettingsButton_Click"/>
+                <Button Grid.Column="1" Content="⚙️ Settings" Style="{StaticResource SecondaryButton}"
+                    Click="SettingsButton_Click" VerticalAlignment="Center" Height="30" Padding="10,0" Margin="10,0,0,0" RenderTransformOrigin="0.141,0.527" BorderBrush="#FF8F8D8D"/>
             </Grid>
         </Border>
     </Grid>

@@ -14,6 +14,7 @@ namespace ConsoleApp1.Services
 
         private static readonly string ConfigFile = Path.Combine(ConfigDirectory, "config.encrypted");
         private static readonly string SettingsFile = Path.Combine(ConfigDirectory, "settings.json");
+        private static readonly string UserDefaultsFile = Path.Combine(ConfigDirectory, "defaults.encrypted");
 
         // Default keys for double encryption (plaintext format)
         // These must be exactly 32 bytes for key and 16 bytes for IV
@@ -62,12 +63,14 @@ namespace ConsoleApp1.Services
         /// </summary>
         public static AppConfig LoadKeys()
         {
+            var (defaultKey, defaultIV) = GetDefaultKeys();
+            
             if (!File.Exists(ConfigFile))
             {
                 return new AppConfig
                 {
-                    Key = DefaultKey,
-                    IV = DefaultIV,
+                    Key = defaultKey,
+                    IV = defaultIV,
                     KeyBase64 = DefaultKeyBase64,
                     IVBase64 = DefaultIVBase64
                 };
@@ -88,16 +91,16 @@ namespace ConsoleApp1.Services
                 {
                     return new AppConfig
                     {
-                        Key = DefaultKey,
-                        IV = DefaultIV,
+                        Key = defaultKey,
+                        IV = defaultIV,
                         KeyBase64 = DefaultKeyBase64,
                         IVBase64 = DefaultIVBase64
                     };
                 }
 
                 // Ensure all values are set
-                if (string.IsNullOrEmpty(config.Key)) config.Key = DefaultKey;
-                if (string.IsNullOrEmpty(config.IV)) config.IV = DefaultIV;
+                if (string.IsNullOrEmpty(config.Key)) config.Key = defaultKey;
+                if (string.IsNullOrEmpty(config.IV)) config.IV = defaultIV;
                 if (string.IsNullOrEmpty(config.KeyBase64)) config.KeyBase64 = DefaultKeyBase64;
                 if (string.IsNullOrEmpty(config.IVBase64)) config.IVBase64 = DefaultIVBase64;
 
@@ -107,8 +110,8 @@ namespace ConsoleApp1.Services
             {
                 return new AppConfig
                 {
-                    Key = DefaultKey,
-                    IV = DefaultIV,
+                    Key = defaultKey,
+                    IV = defaultIV,
                     KeyBase64 = DefaultKeyBase64,
                     IVBase64 = DefaultIVBase64
                 };
@@ -124,6 +127,45 @@ namespace ConsoleApp1.Services
             {
                 File.Delete(ConfigFile);
             }
+            if (File.Exists(ConfigFile))
+            {
+                File.Delete(ConfigFile);
+            }
+        }
+
+        /// <summary>
+        /// Sets the current keys as the new default (user-defined defaults)
+        /// </summary>
+        public static void SetAsDefaultKeys(string key, string iv)
+        {
+            var userDefaults = new { Key = key, IV = iv };
+            string json = JsonSerializer.Serialize(userDefaults);
+            byte[] data = Encoding.UTF8.GetBytes(json);
+            byte[] encrypted = ProtectedData.Protect(data, null, DataProtectionScope.CurrentUser);
+            File.WriteAllBytes(UserDefaultsFile, encrypted);
+        }
+
+        /// <summary>
+        /// Gets the default key (user-defined or hardcoded)
+        /// </summary>
+        public static (string Key, string IV) GetDefaultKeys()
+        {
+            if (File.Exists(UserDefaultsFile))
+            {
+                try
+                {
+                    byte[] encrypted = File.ReadAllBytes(UserDefaultsFile);
+                    byte[] decrypted = ProtectedData.Unprotect(encrypted, null, DataProtectionScope.CurrentUser);
+                    string json = Encoding.UTF8.GetString(decrypted);
+                    var defaults = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
+                    if (defaults != null && defaults.ContainsKey("Key") && defaults.ContainsKey("IV"))
+                    {
+                        return (defaults["Key"], defaults["IV"]);
+                    }
+                }
+                catch { }
+            }
+            return (DefaultKey, DefaultIV);
         }
 
         /// <summary>

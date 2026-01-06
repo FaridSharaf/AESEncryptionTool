@@ -10,20 +10,42 @@ using ConsoleApp1.Services;
 namespace ConsoleApp1.Views
 {
     /// <summary>
-    /// Converter for showing filled/empty star based on favorite status
+    /// Converter for showing bookmark/tag icon based on status
     /// </summary>
-    public class BoolToStarConverter : IValueConverter
+    public class BoolToBookmarkConverter : IValueConverter
     {
-        public static readonly BoolToStarConverter Instance = new();
+        public static readonly BoolToBookmarkConverter Instance = new();
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return (value is bool b && b) ? "★" : "☆";
+            return (value is bool b && b) ? "🔖" : "🏷️";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return value?.ToString() == "★";
+            return value?.ToString() == "🔖";
+        }
+    }
+
+    /// <summary>
+    /// Converter for showing note (if available) or output in recent items
+    /// </summary>
+    public class NoteOrOutputConverter : IValueConverter
+    {
+        public static readonly NoteOrOutputConverter Instance = new();
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is HistoryEntry entry)
+            {
+                return string.IsNullOrWhiteSpace(entry.Note) ? entry.Output : $"📝 {entry.Note}";
+            }
+            return value?.ToString() ?? "";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
         }
     }
 
@@ -38,12 +60,19 @@ namespace ConsoleApp1.Views
         private bool _encryptFavorite = false;
         private bool _decryptFavorite = false;
         private bool _showingFavoritesOnly = false;
+        
+        // Use ObservableCollection to prevent grid resets
+        public System.Collections.ObjectModel.ObservableCollection<HistoryEntry> HistoryItems { get; set; } = new();
 
         public MainWindow()
         {
             InitializeComponent();
             LoadSettings();
             LoadKeys();
+            
+            // Bind DataGrid to ObservableCollection
+            HistoryDataGrid.ItemsSource = HistoryItems;
+            
             LoadHistory();
             SetupKeyboardShortcuts();
             UpdateStatus("✓ Ready - Using double encryption (plaintext keys)");
@@ -83,8 +112,38 @@ namespace ConsoleApp1.Views
             var history = _showingFavoritesOnly 
                 ? HistoryManager.GetFavorites() 
                 : HistoryManager.LoadHistory();
-            HistoryDataGrid.ItemsSource = null;
-            HistoryDataGrid.ItemsSource = history;
+            
+            HistoryItems.Clear();
+            foreach (var item in history)
+            {
+                HistoryItems.Add(item);
+            }
+        }
+
+        private void HistorySearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string searchText = HistorySearchTextBox.Text;
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                RefreshHistory();
+            }
+            else
+            {
+                var allHistory = _showingFavoritesOnly 
+                    ? HistoryManager.GetFavorites() 
+                    : HistoryManager.LoadHistory();
+                var results = allHistory.Where(entry =>
+                    entry.Input.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                    entry.Output.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                    entry.Note.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+                ).ToList();
+                
+                HistoryItems.Clear();
+                foreach (var item in results)
+                {
+                    HistoryItems.Add(item);
+                }
+            }
         }
 
         private void RefreshRecentItems()
@@ -244,6 +303,57 @@ namespace ConsoleApp1.Views
             }
         }
 
+        private void SetDefaultKeysButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_keyMasked || _ivMasked)
+            {
+                MessageBox.Show("Please show the keys (click 👁️) first to set them as default.", "Keys Hidden", 
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            string key = KeyTextBox.Text.Trim();
+            string iv = IVTextBox.Text.Trim();
+
+            if (!ConfigManager.IsValidPlaintextKey(key))
+            {
+                MessageBox.Show("Key must be 16, 24, or 32 characters.", "Invalid Key", 
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (!ConfigManager.IsValidPlaintextIV(iv))
+            {
+                MessageBox.Show("IV must be 16 characters.", "Invalid IV", 
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var result = MessageBox.Show(
+                "This will set the current keys as the new default.\n\nThe 'Reset' button will restore to these keys in the future.\n\nContinue?",
+                "Set as Default",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    ConfigManager.SetAsDefaultKeys(key, iv);
+                    ConfigManager.SaveKeys(key, iv, _config.KeyBase64, _config.IVBase64);
+                    _config = ConfigManager.LoadKeys();
+                    UpdateStatus("✓ Keys set as new default");
+                    MessageBox.Show("Current keys are now the default!", "Success", 
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error: {ex.Message}", "Error", 
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
         // Encrypt Functions
         private void EncryptInputTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -282,7 +392,8 @@ namespace ConsoleApp1.Views
         private void EncryptFavoriteButton_Click(object sender, RoutedEventArgs e)
         {
             _encryptFavorite = !_encryptFavorite;
-            EncryptFavoriteButton.Content = _encryptFavorite ? "★" : "☆";
+            EncryptFavoriteButton.Content = _encryptFavorite ? "🔖" : "🏷️";
+            EncryptFavoriteButton.ToolTip = _encryptFavorite ? "Remove bookmark" : "Add to bookmarks";
             
             if (_currentEncryptEntry != null)
             {
@@ -346,7 +457,8 @@ namespace ConsoleApp1.Views
             EncryptOutputTextBox.Clear();
             EncryptNoteTextBox.Clear();
             _encryptFavorite = false;
-            EncryptFavoriteButton.Content = "☆";
+            EncryptFavoriteButton.Content = "🏷️";
+            EncryptFavoriteButton.ToolTip = "Add to bookmarks";
             _currentEncryptEntry = null;
             EncryptInputTextBox.Focus();
             UpdateStatus("✓ Ready");
@@ -399,7 +511,8 @@ namespace ConsoleApp1.Views
         private void DecryptFavoriteButton_Click(object sender, RoutedEventArgs e)
         {
             _decryptFavorite = !_decryptFavorite;
-            DecryptFavoriteButton.Content = _decryptFavorite ? "★" : "☆";
+            DecryptFavoriteButton.Content = _decryptFavorite ? "🔖" : "🏷️";
+            DecryptFavoriteButton.ToolTip = _decryptFavorite ? "Remove bookmark" : "Add to bookmarks";
             
             if (_currentDecryptEntry != null)
             {
@@ -463,7 +576,8 @@ namespace ConsoleApp1.Views
             DecryptOutputTextBox.Clear();
             DecryptNoteTextBox.Clear();
             _decryptFavorite = false;
-            DecryptFavoriteButton.Content = "☆";
+            DecryptFavoriteButton.Content = "🏷️";
+            DecryptFavoriteButton.ToolTip = "Add to bookmarks";
             _currentDecryptEntry = null;
             DecryptInputTextBox.Focus();
             UpdateStatus("✓ Ready");
@@ -501,36 +615,57 @@ namespace ConsoleApp1.Views
         }
 
         // History Functions
-        private void HistorySearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void HistoryDataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
         {
-            string searchText = HistorySearchTextBox.Text;
-            if (string.IsNullOrWhiteSpace(searchText))
+            if (e.Column.Header.ToString() == "Note" && e.EditAction == DataGridEditAction.Commit)
             {
-                RefreshHistory();
-            }
-            else
-            {
-                var allHistory = _showingFavoritesOnly 
-                    ? HistoryManager.GetFavorites() 
-                    : HistoryManager.LoadHistory();
-                var results = allHistory.Where(entry =>
-                    entry.Input.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                    entry.Output.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-                    entry.Note.Contains(searchText, StringComparison.OrdinalIgnoreCase)
-                ).ToList();
-                HistoryDataGrid.ItemsSource = results;
+                if (e.Row.Item is HistoryEntry entry && e.EditingElement is TextBox textBox)
+                {
+                    // Update note with new value
+                    string newNote = textBox.Text;
+                    if (entry.Note != newNote)
+                    {
+                        entry.Note = newNote;
+                        HistoryManager.UpdateEntry(entry);
+                        RefreshRecentItems();
+                        UpdateStatus("✓ Note saved");
+                    }
+                }
             }
         }
 
-        private void ShowFavoritesButton_Click(object sender, RoutedEventArgs e)
+        private void ShowBookmarksButton_Click(object sender, RoutedEventArgs e)
         {
-            _showingFavoritesOnly = true;
+            // Toggle between bookmarks and all
+            _showingFavoritesOnly = !_showingFavoritesOnly;
+            if (_showingFavoritesOnly)
+            {
+                ShowFavoritesButton.Content = "📜 All";
+                HistoryLabel.Text = "🔖 Bookmarks";
+                UpdateStatus("Showing bookmarks only");
+            }
+            else
+            {
+                ShowFavoritesButton.Content = "🔖 Bookmarks";
+                HistoryLabel.Text = "📜 History";
+                UpdateStatus("Showing all history");
+            }
             RefreshHistory();
-            UpdateStatus("Showing favorites only");
+        }
+
+        private void HistoryLabel_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            // Click History label to show all history
+            _showingFavoritesOnly = false;
+            ShowFavoritesButton.Content = "⭐ Favorites";
+            HistoryLabel.Text = "📜 History";
+            RefreshHistory();
+            UpdateStatus("Showing all history");
         }
 
         private void ShowAllHistoryButton_Click(object sender, RoutedEventArgs e)
         {
+            // Keep for backward compatibility
             _showingFavoritesOnly = false;
             RefreshHistory();
             UpdateStatus("Showing all history");
@@ -538,6 +673,7 @@ namespace ConsoleApp1.Views
 
         private void HistoryDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            // Double-click to copy output
             if (HistoryDataGrid.SelectedItem is HistoryEntry entry)
             {
                 Clipboard.SetText(entry.Output);
@@ -562,6 +698,43 @@ namespace ConsoleApp1.Views
             {
                 Clipboard.SetText(entry.Output);
                 UpdateStatus("✓ Copied to clipboard");
+            }
+        }
+
+        private void HistoryEditNoteButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is HistoryEntry entry)
+            {
+                var dialog = new NoteEditDialog(entry.Note);
+                dialog.Owner = this;
+                if (dialog.ShowDialog() == true)
+                {
+                    entry.Note = dialog.NoteText;
+                    HistoryManager.UpdateEntry(entry);
+                    RefreshHistory();
+                    RefreshRecentItems();
+                    UpdateStatus("✓ Note updated");
+                }
+            }
+        }
+
+        private void HistoryDeleteButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is HistoryEntry entry)
+            {
+                var result = MessageBox.Show(
+                    $"Delete this entry?\n\nInput: {entry.Input.Substring(0, Math.Min(30, entry.Input.Length))}...",
+                    "Confirm Delete",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    HistoryManager.DeleteEntry(entry.Id);
+                    RefreshHistory();
+                    RefreshRecentItems();
+                    UpdateStatus("✓ Entry deleted");
+                }
             }
         }
 
@@ -625,6 +798,11 @@ namespace ConsoleApp1.Views
             ConfigManager.SaveSettings(_settings);
 
             base.OnClosing(e);
+        }
+
+        private void HistoryDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
         }
     }
 }
