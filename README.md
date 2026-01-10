@@ -1,24 +1,63 @@
 # AES Encryption Tool
 
-A modern WPF desktop application for encrypting and decrypting text using AES encryption. Built for developers who need to quickly encrypt/decrypt sensitive data like phone numbers, client IDs, or other identifiers during debugging.
+A modern WPF desktop application for encrypting and decrypting text using **double AES encryption**. Built for developers who need to quickly encrypt/decrypt sensitive data like phone numbers, client IDs, or other identifiers during debugging.
 
 ![.NET](https://img.shields.io/badge/.NET-6.0-blue)
 ![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey)
 ![License](https://img.shields.io/badge/License-MIT-green)
+![Version](https://img.shields.io/badge/Version-1.0-orange)
 
 ## ✨ Features
 
-- **Double Encryption** - Encrypts text twice for extra security (configurable)
-- **Modern Dark UI** - Sleek, eye-friendly dark theme with accent colors
-- **History & Favorites** - Track all operations with ⭐ favorites support
+### 🔐 Double Encryption
+The tool applies AES encryption **twice** for enhanced security:
+1. **First Pass**: Encrypts plaintext → Base64 ciphertext
+2. **Second Pass**: Encrypts the Base64 → Final encrypted output
+
+This provides an extra layer of protection, making brute-force attacks significantly harder.
+
+### Core Features
 - **Auto-detect** - Automatically detects if input is encrypted or plain text
-- **Secure Key Storage** - Keys encrypted using Windows DPAPI (user-specific)
 - **Quick Copy** - Double-click output to copy, auto-copy option available
-- **Search History** - Find past operations quickly
+- **Keyboard Shortcuts** - Press Enter to encrypt/decrypt
+
+### UI & Organization
+- **🌊 Deep Ocean Theme** - Modern dark UI with Sky Blue & Teal accents
+- **📑 Tabbed Interface** - Organized into Operations, History, and Bookmarks tabs
+- **🔍 Search** - Search through history and bookmarks
+
+### Data Management
+- **📜 History** - Track all encryption/decryption operations
+- **🔖 Bookmarks** - Mark important entries (stored separately)
+- **⚙️ Configurable Limits** - Set max records for history (500) and bookmarks (100)
+- **🧹 Clear Functions** - Clear history or bookmarks independently
+
+### Security
+- **🔐 Secure Key Storage** - Keys encrypted using Windows DPAPI
+- **👁️ Masked Keys** - Keys partially masked (first 2 + last 4 chars visible)
+- **📂 Separate Storage** - History and bookmarks in separate JSON files
+
+## 🔒 How Double Encryption Works
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  Plaintext  │ ──► │  1st AES    │ ──► │  2nd AES    │ ──► Final Output
+│  "Hello"    │     │  Encrypt    │     │  Encrypt    │
+└─────────────┘     └─────────────┘     └─────────────┘
+
+Decrypt reverses the process:
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  Encrypted  │ ──► │  1st AES    │ ──► │  2nd AES    │ ──► Plaintext
+│  Input      │     │  Decrypt    │     │  Decrypt    │
+└─────────────┘     └─────────────┘     └─────────────┘
+```
 
 ## 📸 Screenshot
 
-The application features a split-view layout with Encrypt and Decrypt panels side by side, a searchable history section, and quick-access recent items.
+The application features a tabbed layout with:
+- **Operations Tab**: Encrypt/Decrypt panels + Recent Items
+- **History Tab**: Searchable history with bookmark/copy/delete actions
+- **Bookmarks Tab**: Dedicated view for bookmarked items
 
 ## 🚀 Getting Started
 
@@ -43,8 +82,8 @@ The application features a split-view layout with Encrypt and Decrypt panels sid
 
 3. **Configure your keys** (first-time setup)
    - Click the 🔐 **Key/IV Configuration** expander
-   - Click 👁️ to reveal the key fields
-   - Enter your AES key (16, 24, or 32 characters)
+   - Click 👁️ to reveal the key fields (shows partial mask)
+   - Enter your AES key (32 characters for AES-256)
    - Enter your IV (16 characters)
    - Click **💾 Save**
 
@@ -56,78 +95,69 @@ The application features a split-view layout with Encrypt and Decrypt panels sid
 |----------|--------|-------------|
 | **AES-128** | 16 characters | Standard security |
 | **AES-192** | 24 characters | Enhanced security |
-| **AES-256** | 32 characters | Maximum security |
+| **AES-256** | 32 characters | Maximum security (recommended) |
 | **IV** | 16 characters | Initialization Vector (always 16) |
 
-### Key Storage
+### Data Storage
 
-Keys are stored securely using **Windows DPAPI** (Data Protection API):
-- Location: `%AppData%\AESEncryptionTool\config.encrypted`
-- Encryption: User-specific (cannot be decrypted by other users/machines)
-- To reset: Click **🔄 Reset** or delete the config file
+All data is stored in `%AppData%\AESEncryptionTool\`:
+
+| File | Description |
+|------|-------------|
+| `config.encrypted` | Keys (DPAPI encrypted, user-specific) |
+| `settings.json` | User preferences |
+| `history.json` | All history entries |
+| `bookmarks.json` | Bookmarked entries (copies) |
 
 ## 📖 Usage
 
-### Encrypt Text
-1. Enter plain text in the **ENCRYPT** panel
-2. Press **Enter** or click **🔐 Encrypt**
-3. Output is automatically copied to clipboard (if enabled)
+### Encrypt / Decrypt
+1. Go to **Operations** tab
+2. Enter text in the respective panel
+3. Optionally click 🏷️ to bookmark before processing
+4. Press **Enter** or click the action button
+5. Output is auto-copied (if enabled)
 
-### Decrypt Text
-1. Paste encrypted text in the **DECRYPT** panel
-2. Press **Enter** or click **🔓 Decrypt**
-3. Output is automatically copied to clipboard (if enabled)
+### Managing History
+- **Search**: Filter by input, output, or note
+- **Bookmark**: Click 🔖 to add to Bookmarks tab
+- **Copy**: Click 📋 to copy output
+- **Delete**: Click 🗑️ to remove entry
 
-### Keyboard Shortcuts
-
-| Shortcut | Action |
-|----------|--------|
-| `Enter` | Encrypt/Decrypt (in respective panel) |
-| `Esc` | Clear current input |
-| `Double-click output` | Copy to clipboard |
-
-### History Features
-
-- **Search**: Type in the search box to filter history
-- **Favorites**: Click ⭐ to mark important items
-- **Copy**: Click 📋 on any row to copy output
-- **Filter**: Toggle between "All" and "Favorites" view
+### Settings (⚙️)
+- **Auto-copy**: Auto-copy results to clipboard
+- **Auto-detect**: Show hints for input type detection
+- **Recent items count**: Items in quick-access bar
+- **Max History/Bookmarks**: Storage limits (max 1000)
 
 ## 🏗️ Project Structure
 
 ```
 ConsoleApp1/
 ├── Models/
-│   ├── AppConfig.cs       # Key configuration model
+│   ├── AppConfig.cs       # Key configuration
 │   ├── AppSettings.cs     # User preferences
-│   └── HistoryEntry.cs    # History item model
+│   └── HistoryEntry.cs    # History/Bookmark model
 ├── Services/
-│   ├── AESCryptography.cs # Encryption/decryption logic
+│   ├── AESCryptography.cs # Double encryption logic
 │   ├── ConfigManager.cs   # Key & settings management
-│   └── HistoryManager.cs  # History persistence
+│   └── HistoryManager.cs  # History & Bookmarks persistence
 ├── Views/
-│   ├── MainWindow.xaml    # Main UI
-│   ├── MainWindow.xaml.cs # Main logic
+│   ├── MainWindow.xaml    # Main UI (Deep Ocean theme)
+│   ├── MainWindow.xaml.cs # Event handlers
 │   ├── SettingsWindow.xaml
 │   └── NoteEditDialog.xaml
-├── App.xaml
 └── ConsoleApp1.csproj
 ```
-
-## ⚙️ Settings
-
-Access settings via the **⚙️ Settings** button:
-
-- **Auto-copy**: Automatically copy results to clipboard
-- **Auto-detect**: Show hints when input type is detected
-- **Recent items count**: Number of items in quick-access bar
 
 ## 🔒 Security Notes
 
 - Default keys in source code are **placeholders only**
 - Never commit real encryption keys to version control
-- Keys are stored encrypted locally using DPAPI
-- History is stored in plain JSON (consider this for sensitive data)
+- Keys are stored encrypted locally using Windows DPAPI
+- Keys are displayed with partial masking for security
+- **Double encryption** provides extra protection against attacks
+- History/Bookmarks stored in plain JSON
 
 ## 🛠️ Development
 
@@ -167,4 +197,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-Made with ❤️ for developers who debug encrypted data
+**v1.0** - Made with ❤️ for developers

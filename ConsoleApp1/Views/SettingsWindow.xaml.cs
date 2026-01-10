@@ -15,6 +15,8 @@ namespace ConsoleApp1.Views
                 AutoCopy = currentSettings.AutoCopy,
                 AutoDetect = currentSettings.AutoDetect,
                 RecentItemsCount = currentSettings.RecentItemsCount,
+                MaxHistoryItems = currentSettings.MaxHistoryItems,
+                MaxBookmarkItems = currentSettings.MaxBookmarkItems,
                 Theme = currentSettings.Theme,
                 WindowWidth = currentSettings.WindowWidth,
                 WindowHeight = currentSettings.WindowHeight,
@@ -26,6 +28,8 @@ namespace ConsoleApp1.Views
             AutoCopyCheckBox.IsChecked = Settings.AutoCopy;
             AutoDetectCheckBox.IsChecked = Settings.AutoDetect;
             RecentItemsCountTextBox.Text = Settings.RecentItemsCount.ToString();
+            MaxHistoryItemsTextBox.Text = Settings.MaxHistoryItems.ToString();
+            MaxBookmarkItemsTextBox.Text = Settings.MaxBookmarkItems.ToString();
             
             foreach (System.Windows.Controls.ComboBoxItem item in ThemeComboBox.Items)
             {
@@ -53,6 +57,28 @@ namespace ConsoleApp1.Views
                 return;
             }
 
+            if (int.TryParse(MaxHistoryItemsTextBox.Text, out int maxHistory) && maxHistory > 0)
+            {
+                Settings.MaxHistoryItems = maxHistory;
+            }
+            else
+            {
+                MessageBox.Show("Max History must be a positive number.", "Invalid Input", 
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (int.TryParse(MaxBookmarkItemsTextBox.Text, out int maxBookmarks) && maxBookmarks > 0)
+            {
+                Settings.MaxBookmarkItems = maxBookmarks;
+            }
+            else
+            {
+                MessageBox.Show("Max Bookmarks must be a positive number.", "Invalid Input", 
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             if (ThemeComboBox.SelectedItem is System.Windows.Controls.ComboBoxItem selectedTheme)
             {
                 Settings.Theme = selectedTheme.Content.ToString() ?? "Light";
@@ -66,6 +92,26 @@ namespace ConsoleApp1.Views
         {
             DialogResult = false;
             Close();
+        }
+
+        private const int MaxAllowedLimit = 1000;
+
+        private void MaxHistoryItemsTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            if (int.TryParse(MaxHistoryItemsTextBox.Text, out int value) && value > MaxAllowedLimit)
+            {
+                MaxHistoryItemsTextBox.Text = MaxAllowedLimit.ToString();
+                MaxHistoryItemsTextBox.CaretIndex = MaxHistoryItemsTextBox.Text.Length;
+            }
+        }
+
+        private void MaxBookmarkItemsTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            if (int.TryParse(MaxBookmarkItemsTextBox.Text, out int value) && value > MaxAllowedLimit)
+            {
+                MaxBookmarkItemsTextBox.Text = MaxAllowedLimit.ToString();
+                MaxBookmarkItemsTextBox.CaretIndex = MaxBookmarkItemsTextBox.Text.Length;
+            }
         }
     }
 }

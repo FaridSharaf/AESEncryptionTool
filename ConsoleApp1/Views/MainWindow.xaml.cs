@@ -59,10 +59,11 @@ namespace ConsoleApp1.Views
         private HistoryEntry? _currentDecryptEntry;
         private bool _encryptFavorite = false;
         private bool _decryptFavorite = false;
-        private bool _showingFavoritesOnly = false;
+        // private bool _showingFavoritesOnly = false; // Removed
         
         // Use ObservableCollection to prevent grid resets
         public System.Collections.ObjectModel.ObservableCollection<HistoryEntry> HistoryItems { get; set; } = new();
+        public System.Collections.ObjectModel.ObservableCollection<HistoryEntry> BookmarksItems { get; set; } = new();
 
         public MainWindow()
         {
@@ -73,6 +74,17 @@ namespace ConsoleApp1.Views
             // Bind DataGrid to ObservableCollection
             HistoryDataGrid.ItemsSource = HistoryItems;
             
+            // Note: BookmarksDataGrid binding happens in XAML or we can set it here if x:Name matches
+            // We'll set it here to be safe after component init
+            if (this.FindName("BookmarksDataGrid") is DataGrid bookmarksGrid)
+            {
+                bookmarksGrid.ItemsSource = BookmarksItems;
+            }
+
+            // Enforce max limits on startup (separate files)
+            HistoryManager.EnforceHistoryLimit(_settings.MaxHistoryItems);
+            HistoryManager.EnforceBookmarkLimit(_settings.MaxBookmarkItems);
+
             LoadHistory();
             SetupKeyboardShortcuts();
             UpdateStatus("✓ Ready - Using double encryption (plaintext keys)");
@@ -96,9 +108,27 @@ namespace ConsoleApp1.Views
         {
             _config = ConfigManager.LoadKeys();
             
-            // Show masked by default
-            KeyTextBox.Text = new string('•', 16);
-            IVTextBox.Text = new string('•', 16);
+            // Initial state: fully hidden
+            KeyTextBox.Text = new string('•', _config.Key.Length > 0 ? _config.Key.Length : 16);
+            IVTextBox.Text = new string('•', _config.IV.Length > 0 ? _config.IV.Length : 16);
+        }
+
+        /// <summary>
+        /// Masks a value showing only first 2 and last 4 characters
+        /// </summary>
+        private string MaskValue(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return new string('•', 8);
+            
+            if (value.Length <= 6)
+                return new string('•', value.Length);
+            
+            // Show first 2 and last 4, mask the rest
+            string prefix = value.Substring(0, 2);
+            string suffix = value.Substring(value.Length - 4);
+            int maskedLength = value.Length - 6;
+            return prefix + new string('•', maskedLength) + suffix;
         }
 
         private void LoadHistory()
@@ -109,14 +139,31 @@ namespace ConsoleApp1.Views
 
         private void RefreshHistory()
         {
-            var history = _showingFavoritesOnly 
-                ? HistoryManager.GetFavorites() 
-                : HistoryManager.LoadHistory();
+            // Reload all history
+            var allHistory = HistoryManager.LoadHistory();
             
+            // Update History Items (Main list)
             HistoryItems.Clear();
-            foreach (var item in history)
+            foreach (var item in allHistory)
             {
                 HistoryItems.Add(item);
+            }
+            
+            // Update Bookmarks Items
+            BookmarksItems.Clear();
+            var favorites = HistoryManager.GetFavorites();
+            foreach (var item in favorites)
+            {
+                BookmarksItems.Add(item);
+            }
+
+            if (HistoryItems.Count > 0)
+            {
+                HistoryLabel.Text = $"📜 History ({HistoryItems.Count})";
+            }
+            else
+            {
+                HistoryLabel.Text = "📜 History";
             }
         }
 
@@ -129,9 +176,7 @@ namespace ConsoleApp1.Views
             }
             else
             {
-                var allHistory = _showingFavoritesOnly 
-                    ? HistoryManager.GetFavorites() 
-                    : HistoryManager.LoadHistory();
+                var allHistory = HistoryManager.LoadHistory();
                 var results = allHistory.Where(entry =>
                     entry.Input.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
                     entry.Output.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
@@ -143,6 +188,64 @@ namespace ConsoleApp1.Views
                 {
                     HistoryItems.Add(item);
                 }
+            }
+        }
+
+        private void BookmarksSearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string searchText = BookmarksSearchTextBox.Text;
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                RefreshHistory();
+            }
+            else
+            {
+                var allBookmarks = HistoryManager.GetFavorites();
+                var results = allBookmarks.Where(entry =>
+                    entry.Input.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                    entry.Output.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                    entry.Note.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+                ).ToList();
+                
+                BookmarksItems.Clear();
+                foreach (var item in results)
+                {
+                    BookmarksItems.Add(item);
+                }
+            }
+        }
+
+        private void ClearHistoryButton_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show(
+                "Are you sure you want to delete ALL history entries?\nThis action cannot be undone.",
+                "Clear History",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                HistoryManager.ClearHistory();
+                RefreshHistory();
+                RefreshRecentItems();
+                UpdateStatus("🗑️ History cleared");
+            }
+        }
+
+        private void ClearBookmarksButton_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show(
+                "Are you sure you want to remove ALL bookmarks?\nThis action cannot be undone.",
+                "Clear Bookmarks",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                HistoryManager.ClearBookmarks();
+                RefreshHistory();
+                RefreshRecentItems();
+                UpdateStatus("🗑️ Bookmarks cleared");
             }
         }
 
@@ -173,12 +276,13 @@ namespace ConsoleApp1.Views
             if (_keyMasked)
             {
                 KeyShowButton.Content = "👁️";
-                KeyTextBox.Text = new string('•', 16);
+                KeyTextBox.Text = new string('•', _config.Key.Length > 0 ? _config.Key.Length : 16);
             }
             else
             {
                 KeyShowButton.Content = "🙈";
-                KeyTextBox.Text = _config.Key;
+                // Show partial mask only - never full key
+                KeyTextBox.Text = MaskValue(_config.Key);
             }
         }
 
@@ -188,12 +292,13 @@ namespace ConsoleApp1.Views
             if (_ivMasked)
             {
                 IVShowButton.Content = "👁️";
-                IVTextBox.Text = new string('•', 16);
+                IVTextBox.Text = new string('•', _config.IV.Length > 0 ? _config.IV.Length : 16);
             }
             else
             {
                 IVShowButton.Content = "🙈";
-                IVTextBox.Text = _config.IV;
+                // Show partial mask only - never full IV
+                IVTextBox.Text = MaskValue(_config.IV);
             }
         }
 
@@ -636,37 +741,20 @@ namespace ConsoleApp1.Views
 
         private void ShowBookmarksButton_Click(object sender, RoutedEventArgs e)
         {
-            // Toggle between bookmarks and all
-            _showingFavoritesOnly = !_showingFavoritesOnly;
-            if (_showingFavoritesOnly)
-            {
-                ShowFavoritesButton.Content = "📜 All";
-                HistoryLabel.Text = "🔖 Bookmarks";
-                UpdateStatus("Showing bookmarks only");
-            }
-            else
-            {
-                ShowFavoritesButton.Content = "🔖 Bookmarks";
-                HistoryLabel.Text = "📜 History";
-                UpdateStatus("Showing all history");
-            }
-            RefreshHistory();
+            // Redundant with new tab, but keeping empty handler or removing if button is gone
+            // Logic moved to Tabs
         }
 
         private void HistoryLabel_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            // Click History label to show all history
-            _showingFavoritesOnly = false;
-            ShowFavoritesButton.Content = "⭐ Favorites";
-            HistoryLabel.Text = "📜 History";
+            // Click History label to refresh history
             RefreshHistory();
-            UpdateStatus("Showing all history");
+            UpdateStatus("History refreshed");
         }
 
         private void ShowAllHistoryButton_Click(object sender, RoutedEventArgs e)
         {
             // Keep for backward compatibility
-            _showingFavoritesOnly = false;
             RefreshHistory();
             UpdateStatus("Showing all history");
         }
@@ -688,7 +776,7 @@ namespace ConsoleApp1.Views
                 entry.IsFavorite = !entry.IsFavorite;
                 HistoryManager.UpdateEntry(entry);
                 RefreshHistory();
-                UpdateStatus(entry.IsFavorite ? "★ Added to favorites" : "☆ Removed from favorites");
+                UpdateStatus(entry.IsFavorite ? "🔖 Added to bookmarks" : "🏷️ Removed from bookmarks");
             }
         }
 
@@ -773,7 +861,7 @@ namespace ConsoleApp1.Views
                 // Warning or error - red/orange
                 StatusTextBlock.Foreground = (SolidColorBrush)FindResource("AccentRed");
             }
-            else if (message.StartsWith("✓") || message.StartsWith("★"))
+            else if (message.StartsWith("✓") || message.StartsWith("🔖"))
             {
                 // Success - green
                 StatusTextBlock.Foreground = (SolidColorBrush)FindResource("AccentGreen");
