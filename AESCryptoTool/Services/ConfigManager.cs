@@ -2,9 +2,9 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using ConsoleApp1.Models;
+using AESCryptoTool.Models;
 
-namespace ConsoleApp1.Services
+namespace AESCryptoTool.Services
 {
     public class ConfigManager
     {

@@ -10,7 +10,7 @@ using CsvHelper;
 using CsvHelper.Configuration;
 using System.Globalization;
 
-namespace ConsoleApp1.Services
+namespace AESCryptoTool.Services
 {
     public class BatchProcessor
     {

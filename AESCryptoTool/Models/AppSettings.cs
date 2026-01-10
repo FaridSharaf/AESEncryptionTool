@@ -1,4 +1,4 @@
-namespace ConsoleApp1.Models
+namespace AESCryptoTool.Models
 {
     public class AppSettings
     {

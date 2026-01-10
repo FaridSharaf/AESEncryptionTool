@@ -1,6 +1,6 @@
 using System.Windows;
 
-namespace ConsoleApp1
+namespace AESCryptoTool
 {
     public partial class App : Application
     {

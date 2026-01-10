@@ -1,7 +1,7 @@
 using System.Windows;
-using ConsoleApp1.Models;
+using AESCryptoTool.Models;
 
-namespace ConsoleApp1.Views
+namespace AESCryptoTool.Views
 {
     public partial class SettingsWindow : Window
     {

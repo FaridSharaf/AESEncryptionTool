@@ -1,6 +1,6 @@
 using System.Windows;
 
-namespace ConsoleApp1.Views
+namespace AESCryptoTool.Views
 {
     public partial class NoteEditDialog : Window
     {

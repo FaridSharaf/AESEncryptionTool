@@ -1,8 +1,8 @@
 using System.IO;
 using System.Text.Json;
-using ConsoleApp1.Models;
+using AESCryptoTool.Models;
 
-namespace ConsoleApp1.Services
+namespace AESCryptoTool.Services
 {
     public class HistoryManager
     {
@@ -144,19 +144,38 @@ namespace ConsoleApp1.Services
         }
 
         /// <summary>
-        /// Deletes an entry from history and bookmarks
+        /// Deletes an entry ONLY from history (preserves bookmarks)
         /// </summary>
-        public static void DeleteEntry(string id)
+        public static void DeleteFromHistory(string id)
+        {
+            if (_historyEntries == null)
+                _historyEntries = LoadHistory();
+            
+            _historyEntries.RemoveAll(e => e.Id == id);
+            SaveHistory();
+        }
+
+        /// <summary>
+        /// Deletes an entry ONLY from bookmarks (updates history status)
+        /// </summary>
+        public static void DeleteFromBookmarks(string id)
         {
             if (_historyEntries == null)
                 _historyEntries = LoadHistory();
             if (_bookmarkEntries == null)
                 _bookmarkEntries = LoadBookmarks();
 
-            _historyEntries.RemoveAll(e => e.Id == id);
+            // Remove from bookmarks
             _bookmarkEntries.RemoveAll(e => e.Id == id);
-            SaveHistory();
             SaveBookmarks();
+
+            // Update history entry if it exists
+            var historyItem = _historyEntries.FirstOrDefault(e => e.Id == id);
+            if (historyItem != null)
+            {
+                historyItem.IsFavorite = false;
+                SaveHistory();
+            }
         }
 
         /// <summary>

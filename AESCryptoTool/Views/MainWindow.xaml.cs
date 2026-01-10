@@ -4,10 +4,10 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-using ConsoleApp1.Models;
-using ConsoleApp1.Services;
+using AESCryptoTool.Models;
+using AESCryptoTool.Services;
 
-namespace ConsoleApp1.Views
+namespace AESCryptoTool.Views
 {
     /// <summary>
     /// Converter for showing bookmark/tag icon based on status
@@ -814,17 +814,37 @@ namespace ConsoleApp1.Views
             if (sender is Button button && button.Tag is HistoryEntry entry)
             {
                 var result = MessageBox.Show(
-                    $"Delete this entry?\n\nInput: {entry.Input.Substring(0, Math.Min(30, entry.Input.Length))}...",
+                    $"Delete this entry from HISTORY?\n(It will remain in Bookmarks if bookmarked)\n\nInput: {entry.Input.Substring(0, Math.Min(30, entry.Input.Length))}...",
                     "Confirm Delete",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Question);
 
                 if (result == MessageBoxResult.Yes)
                 {
-                    HistoryManager.DeleteEntry(entry.Id);
+                    HistoryManager.DeleteFromHistory(entry.Id);
                     RefreshHistory();
                     RefreshRecentItems();
-                    UpdateStatus("✓ Entry deleted");
+                    UpdateStatus("✓ Entry deleted from History");
+                }
+            }
+        }
+
+        private void BookmarksDeleteButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is HistoryEntry entry)
+            {
+                var result = MessageBox.Show(
+                    $"Remove this bookmark?\n(It will remain in History)\n\nInput: {entry.Input.Substring(0, Math.Min(30, entry.Input.Length))}...",
+                    "Confirm Remove Bookmark",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    HistoryManager.DeleteFromBookmarks(entry.Id);
+                    RefreshHistory();
+                    // RefreshRecentItems(); // Bookmarks changes might affect recent items status
+                    UpdateStatus("✓ Bookmark removed");
                 }
             }
         }

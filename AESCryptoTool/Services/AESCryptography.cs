@@ -2,7 +2,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace ConsoleApp1.Services
+namespace AESCryptoTool.Services
 {
     public static class AESCryptography
     {

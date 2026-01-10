@@ -56,6 +56,7 @@ Decrypt reverses the process:
 
 The application features a tabbed layout with:
 - **Operations Tab**: Encrypt/Decrypt panels + Recent Items
+- **Batch Tab**: Process large Excel/CSV files in bulk
 - **History Tab**: Searchable history with bookmark/copy/delete actions
 - **Bookmarks Tab**: Dedicated view for bookmarked items
 
@@ -76,8 +77,9 @@ The application features a tabbed layout with:
 
 2. **Build and run**
    ```bash
+   cd AESCryptoTool
    dotnet build
-   dotnet run --project ConsoleApp1
+   dotnet run
    ```
 
 3. **Configure your keys** (first-time setup)
@@ -133,13 +135,14 @@ All data is stored in `%AppData%\AESEncryptionTool\`:
 ## 🏗️ Project Structure
 
 ```
-ConsoleApp1/
+AESCryptoTool/
 ├── Models/
 │   ├── AppConfig.cs       # Key configuration
 │   ├── AppSettings.cs     # User preferences
 │   └── HistoryEntry.cs    # History/Bookmark model
 ├── Services/
 │   ├── AESCryptography.cs # Double encryption logic
+│   ├── BatchProcessor.cs  # Bulk Excel/CSV processing
 │   ├── ConfigManager.cs   # Key & settings management
 │   └── HistoryManager.cs  # History & Bookmarks persistence
 ├── Views/
@@ -147,7 +150,7 @@ ConsoleApp1/
 │   ├── MainWindow.xaml.cs # Event handlers
 │   ├── SettingsWindow.xaml
 │   └── NoteEditDialog.xaml
-└── ConsoleApp1.csproj
+└── AESCryptoTool.csproj
 ```
 
 ## 🔒 Security Notes
@@ -171,7 +174,8 @@ git clone https://github.com/FaridSharaf/AESEncryptionTool.git
 dotnet build
 
 # Run
-dotnet run --project ConsoleApp1
+cd AESCryptoTool
+dotnet run
 
 # Publish (single file)
 dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
