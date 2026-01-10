@@ -986,6 +986,9 @@ namespace AESCryptoTool.Views
             }
 
             BatchColumnComboBox.IsEnabled = headers.Count > 0;
+            
+            // Update row count display
+            UpdateBatchRowCount();
         }
 
         private void BatchColumn_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -995,6 +998,7 @@ namespace AESCryptoTool.Views
             // Auto-detect if data is encrypted or plaintext
             AutoDetectBatchOperation();
             UpdateBatchOutputPath();
+            LoadBatchPreview();
         }
 
         private void AutoDetectBatchOperation()
@@ -1262,11 +1266,116 @@ namespace AESCryptoTool.Views
             BatchSummaryBorder.Visibility = Visibility.Collapsed;
             BatchSummaryText.Text = "";
             
+            // Reset preview
+            BatchPreviewBorder.Visibility = Visibility.Collapsed;
+            BatchPreviewDataGrid.ItemsSource = null;
+            BatchRowCountText.Text = "";
+            
             // Reset buttons
             BatchProcessButton.IsEnabled = false;
             BatchCancelButton.IsEnabled = false;
             
             UpdateStatus("Ready");
+        }
+
+        private void BatchBorder_DragOver(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if (files.Length == 1)
+                {
+                    var ext = System.IO.Path.GetExtension(files[0]).ToLower();
+                    if (ext == ".xlsx" || ext == ".csv")
+                    {
+                        e.Effects = DragDropEffects.Copy;
+                        e.Handled = true;
+                        return;
+                    }
+                }
+            }
+            e.Effects = DragDropEffects.None;
+            e.Handled = true;
+        }
+
+        private void BatchBorder_Drop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if (files.Length == 1)
+                {
+                    var ext = System.IO.Path.GetExtension(files[0]).ToLower();
+                    if (ext == ".xlsx" || ext == ".csv")
+                    {
+                        _batchFilePath = files[0];
+                        BatchFilePathTextBox.Text = System.IO.Path.GetFileName(_batchFilePath);
+                        BatchFilePathTextBox.Foreground = (SolidColorBrush)FindResource("TextPrimary");
+                        BatchProcessButton.IsEnabled = true;
+
+                        // Load columns and auto-detect
+                        LoadBatchColumns();
+                        UpdateBatchOutputPath();
+                        UpdateStatus($"✓ Loaded: {System.IO.Path.GetFileName(_batchFilePath)}");
+                    }
+                    else
+                    {
+                        UpdateStatus("⚠ Unsupported file type. Use .xlsx or .csv");
+                    }
+                }
+            }
+        }
+
+        private void LoadBatchPreview()
+        {
+            if (string.IsNullOrEmpty(_batchFilePath) || BatchColumnComboBox.SelectedItem == null)
+            {
+                BatchPreviewBorder.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            try
+            {
+                bool hasHeader = BatchHasHeaderCheckBox.IsChecked == true;
+                string columnName = BatchColumnComboBox.SelectedItem.ToString() ?? "";
+                
+                var previewValues = BatchProcessor.GetPreviewRows(_batchFilePath, columnName, hasHeader, 5);
+                
+                if (previewValues.Count > 0)
+                {
+                    var previewItems = previewValues.Select((v, i) => new { RowNumber = i + 1, Value = v }).ToList();
+                    BatchPreviewDataGrid.ItemsSource = previewItems;
+                    BatchPreviewBorder.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    BatchPreviewBorder.Visibility = Visibility.Collapsed;
+                }
+            }
+            catch
+            {
+                BatchPreviewBorder.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void UpdateBatchRowCount()
+        {
+            if (string.IsNullOrEmpty(_batchFilePath))
+            {
+                BatchRowCountText.Text = "";
+                return;
+            }
+
+            try
+            {
+                bool hasHeader = BatchHasHeaderCheckBox.IsChecked == true;
+                int rowCount = BatchProcessor.GetRowCount(_batchFilePath, hasHeader);
+                BatchRowCountText.Text = $"📊 {rowCount:N0} rows";
+            }
+            catch
+            {
+                BatchRowCountText.Text = "";
+            }
         }
 
         private void OpenBatchOutputFolder_Click(object sender, RoutedEventArgs e)

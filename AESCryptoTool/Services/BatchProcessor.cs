@@ -508,6 +508,148 @@ namespace AESCryptoTool.Services
 
             return null;
         }
+
+        /// <summary>
+        /// Gets the first N values from a column for preview
+        /// </summary>
+        public static List<string> GetPreviewRows(string filePath, string columnName, bool hasHeader, int count = 5)
+        {
+            var values = new List<string>();
+            var extension = Path.GetExtension(filePath).ToLower();
+
+            try
+            {
+                if (extension == ".xlsx")
+                {
+                    using var workbook = new XLWorkbook(filePath);
+                    var worksheet = workbook.Worksheets.First();
+                    int lastColumn = worksheet.LastColumnUsed()?.ColumnNumber() ?? 1;
+
+                    // Find column index
+                    int targetCol = -1;
+                    if (hasHeader)
+                    {
+                        for (int col = 1; col <= lastColumn; col++)
+                        {
+                            if (worksheet.Cell(1, col).GetString() == columnName)
+                            {
+                                targetCol = col;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (columnName.StartsWith("Column ") && int.TryParse(columnName.Substring(7), out int colNum))
+                        {
+                            targetCol = colNum;
+                        }
+                        else
+                        {
+                            targetCol = 1;
+                        }
+                    }
+
+                    if (targetCol > 0)
+                    {
+                        int startRow = hasHeader ? 2 : 1;
+                        int lastRow = Math.Min(startRow + count - 1, worksheet.LastRowUsed()?.RowNumber() ?? 1);
+                        
+                        for (int row = startRow; row <= lastRow; row++)
+                        {
+                            string value = worksheet.Cell(row, targetCol).GetString();
+                            values.Add(value);
+                        }
+                    }
+                }
+                else if (extension == ".csv")
+                {
+                    var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+                    {
+                        HasHeaderRecord = hasHeader,
+                    };
+
+                    using var reader = new StreamReader(filePath);
+                    using var csv = new CsvReader(reader, config);
+
+                    if (hasHeader)
+                    {
+                        csv.Read();
+                        csv.ReadHeader();
+                    }
+
+                    int? targetIndex = null;
+                    if (!hasHeader)
+                    {
+                        if (columnName.StartsWith("Column ") && int.TryParse(columnName.Substring(7), out int colNum))
+                        {
+                            targetIndex = colNum - 1;
+                        }
+                        else
+                        {
+                            targetIndex = 0;
+                        }
+                    }
+
+                    int rowsRead = 0;
+                    while (csv.Read() && rowsRead < count)
+                    {
+                        string value;
+                        if (targetIndex.HasValue)
+                        {
+                            value = csv.GetField(targetIndex.Value) ?? "";
+                        }
+                        else
+                        {
+                            value = csv.GetField(columnName) ?? "";
+                        }
+                        values.Add(value);
+                        rowsRead++;
+                    }
+                }
+            }
+            catch
+            {
+                // Return empty list on error
+            }
+
+            return values;
+        }
+
+        /// <summary>
+        /// Gets the total row count for a file (excluding header if applicable)
+        /// </summary>
+        public static int GetRowCount(string filePath, bool hasHeader)
+        {
+            var extension = Path.GetExtension(filePath).ToLower();
+
+            try
+            {
+                if (extension == ".xlsx")
+                {
+                    using var workbook = new XLWorkbook(filePath);
+                    var worksheet = workbook.Worksheets.First();
+                    int lastRow = worksheet.LastRowUsed()?.RowNumber() ?? 0;
+                    return hasHeader ? Math.Max(0, lastRow - 1) : lastRow;
+                }
+                else if (extension == ".csv")
+                {
+                    int count = 0;
+                    using var reader = new StreamReader(filePath);
+                    while (reader.ReadLine() != null)
+                    {
+                        count++;
+                    }
+                    return hasHeader ? Math.Max(0, count - 1) : count;
+                }
+            }
+            catch
+            {
+                // Return 0 on error
+            }
+
+            return 0;
+        }
     }
 
     public class BatchResult

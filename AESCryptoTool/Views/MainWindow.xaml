@@ -409,9 +409,11 @@
 
             <!-- Batch Processing Tab -->
             <TabItem Header="Batch">
-                <Border Background="{StaticResource CardBg}" CornerRadius="12" Padding="20" Margin="0,15,0,0">
+                <Border x:Name="BatchDropBorder" Background="{StaticResource CardBg}" CornerRadius="12" Padding="20" Margin="0,15,0,0"
+                        AllowDrop="True" Drop="BatchBorder_Drop" DragOver="BatchBorder_DragOver">
                     <Grid>
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
@@ -422,9 +424,19 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <!-- Header -->
-                        <TextBlock Grid.Row="0" Text="📂 Batch Processing" FontWeight="Bold" FontSize="16" 
-                                   Foreground="{StaticResource TextPrimary}" Margin="0,0,0,15"/>
+                        <!-- Header with Row Count -->
+                        <Grid Grid.Row="0" Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="📂 Batch Processing" FontWeight="Bold" FontSize="16" 
+                                       Foreground="{StaticResource TextPrimary}"/>
+                            <TextBlock x:Name="BatchRowCountText" Grid.Column="2" Text="" 
+                                       Foreground="{StaticResource TextSecondary}" FontSize="13"
+                                       VerticalAlignment="Center"/>
+                        </Grid>
 
                         <!-- File Selection -->
                         <Grid Grid.Row="1" Margin="0,0,0,15">
@@ -436,7 +448,7 @@
                             <TextBox x:Name="BatchFilePathTextBox" Grid.Column="0" 
                                      Style="{StaticResource InputTextBox}" Height="45"
                                      IsReadOnly="True" TextAlignment="Center" VerticalContentAlignment="Center"
-                                     Text="Select a file (.xlsx or .csv)..."
+                                     Text="📥 Drop file here or click Browse..."
                                      Foreground="{StaticResource TextSecondary}"/>
                             <Button Grid.Column="1" Content="📁 Browse" 
                                     Style="{StaticResource ModernButton}" 
@@ -507,8 +519,33 @@
                                     Click="BrowseOutputFile_Click" ToolTip="Choose output location"/>
                         </Grid>
 
+                        <!-- Preview Panel -->
+                        <Border x:Name="BatchPreviewBorder" Grid.Row="5" Margin="0,0,0,15" 
+                                Background="{StaticResource SecondaryBg}" CornerRadius="8" Padding="10"
+                                Visibility="Collapsed">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Text="📋 Preview (first 5 rows)" 
+                                           Foreground="{StaticResource TextSecondary}" FontSize="12" Margin="0,0,0,8"/>
+                                <DataGrid x:Name="BatchPreviewDataGrid" Grid.Row="1" 
+                                          AutoGenerateColumns="False" IsReadOnly="True"
+                                          MaxHeight="150" CanUserAddRows="False"
+                                          Background="Transparent" BorderThickness="0"
+                                          HeadersVisibility="Column" GridLinesVisibility="Horizontal"
+                                          HorizontalGridLinesBrush="{StaticResource BorderColor}">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="40"/>
+                                        <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Grid>
+                        </Border>
+
                         <!-- Progress Section -->
-                        <Grid Grid.Row="5" Margin="0,0,0,15">
+                        <Grid Grid.Row="6" Margin="0,0,0,15">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
@@ -525,7 +562,7 @@
                         </Grid>
 
                         <!-- Summary (hidden until processing complete) -->
-                        <Border x:Name="BatchSummaryBorder" Grid.Row="6" 
+                        <Border x:Name="BatchSummaryBorder" Grid.Row="7" 
                                 Background="{StaticResource SecondaryBg}" 
                                 CornerRadius="8" Padding="15" Visibility="Collapsed">
                             <Grid>
@@ -550,7 +587,7 @@
                         </Border>
 
                         <!-- Action Buttons -->
-                        <StackPanel Grid.Row="7" Orientation="Horizontal" 
+                        <StackPanel Grid.Row="8" Orientation="Horizontal" 
                                     HorizontalAlignment="Right" Margin="0,15,0,0">
                             <Button x:Name="BatchResetButton" Content="🧹 Clear" 
                                     Style="{StaticResource SecondaryButton}" 
