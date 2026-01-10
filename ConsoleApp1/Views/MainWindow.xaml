@@ -21,6 +21,7 @@
         <SolidColorBrush x:Key="AccentYellow" Color="#FACC15"/>
         <SolidColorBrush x:Key="TextPrimary" Color="#F1F5F9"/>
         <SolidColorBrush x:Key="TextSecondary" Color="#94A3B8"/>
+        <SolidColorBrush x:Key="TextMuted" Color="#64748B"/>
         <SolidColorBrush x:Key="BorderColor" Color="#475569"/>
         <SolidColorBrush x:Key="SelectionBg" Color="#475569"/>
 
@@ -404,6 +405,170 @@
                         </Grid>
                     </Border>
                 </Grid>
+            </TabItem>
+
+            <!-- Batch Processing Tab -->
+            <TabItem Header="Batch">
+                <Border Background="{StaticResource CardBg}" CornerRadius="12" Padding="20" Margin="0,15,0,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Header -->
+                        <TextBlock Grid.Row="0" Text="📂 Batch Processing" FontWeight="Bold" FontSize="16" 
+                                   Foreground="{StaticResource TextPrimary}" Margin="0,0,0,15"/>
+
+                        <!-- File Selection -->
+                        <Grid Grid.Row="1" Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox x:Name="BatchFilePathTextBox" Grid.Column="0" 
+                                     Style="{StaticResource InputTextBox}" Height="42"
+                                     IsReadOnly="True" TextAlignment="Center" VerticalContentAlignment="Center"
+                                     Text="Select a file (.xlsx or .csv)..."
+                                     Foreground="{StaticResource TextSecondary}"/>
+                            <Button Grid.Column="1" Content="📁 Browse" 
+                                    Style="{StaticResource ModernButton}" 
+                                    Margin="10,0,0,0" Padding="15,8"
+                                    Click="BrowseBatchFile_Click"/>
+                        </Grid>
+
+                        <!-- Options Row -->
+                        <Grid Grid.Row="2" Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <CheckBox x:Name="BatchHasHeaderCheckBox" Grid.Column="0" 
+                                      Content="File has header row" IsChecked="True"
+                                      Foreground="{StaticResource TextPrimary}" 
+                                      VerticalAlignment="Center" Margin="0,0,20,0"
+                                      Checked="BatchHasHeader_Changed" Unchecked="BatchHasHeader_Changed"/>
+
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="Column:" Foreground="{StaticResource TextSecondary}" 
+                                           VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <ComboBox x:Name="BatchColumnComboBox" Width="180" Height="38"
+                                          IsEnabled="False" SelectionChanged="BatchColumn_SelectionChanged"/>
+                            </StackPanel>
+
+                            <TextBlock x:Name="BatchPatternLabel" Grid.Column="2" Text="Pattern:" 
+                                       Foreground="{StaticResource TextSecondary}" 
+                                       VerticalAlignment="Center" Margin="20,0,10,0"/>
+                            <TextBox x:Name="BatchPatternTextBox" Grid.Column="3" 
+                                     Style="{StaticResource InputTextBox}" Height="38" VerticalContentAlignment="Center"
+                                     Text=".*PhoneNumber.*" ToolTip="Regex pattern to match column name"/>
+                        </Grid>
+
+                        <!-- Operation Selection -->
+                        <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,15">
+                            <TextBlock Text="Operation:" Foreground="{StaticResource TextSecondary}" 
+                                       VerticalAlignment="Center" Margin="0,0,15,0"/>
+                            <RadioButton x:Name="BatchEncryptRadio" Content="🔐 Encrypt" 
+                                         IsChecked="True" Foreground="{StaticResource TextPrimary}"
+                                         GroupName="BatchOperation" Margin="0,0,20,0"/>
+                            <RadioButton x:Name="BatchDecryptRadio" Content="🔓 Decrypt" 
+                                         Foreground="{StaticResource TextPrimary}"
+                                         GroupName="BatchOperation"/>
+                        </StackPanel>
+
+                        <!-- Output Path -->
+                        <Grid Grid.Row="4" Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0" Text="Output:" Foreground="{StaticResource TextSecondary}" 
+                                       VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBox x:Name="BatchOutputPathTextBox" Grid.Column="1" 
+                                     Style="{StaticResource InputTextBox}" Height="42" VerticalContentAlignment="Center"
+                                     Text="(auto-generated)"
+                                     Foreground="{StaticResource TextSecondary}"
+                                     TextChanged="BatchOutputPath_TextChanged"/>
+                            <Button Grid.Column="2" Content="📁" 
+                                    Style="{StaticResource SecondaryButton}" 
+                                    Margin="10,0,0,0" Padding="10,5" Width="40"
+                                    Click="BrowseOutputFile_Click" ToolTip="Choose output location"/>
+                        </Grid>
+
+                        <!-- Progress Section -->
+                        <Grid Grid.Row="5" Margin="0,0,0,15">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <ProgressBar x:Name="BatchProgressBar" Grid.Row="0" 
+                                         Height="20" Minimum="0" Maximum="100" Value="0"
+                                         Background="{StaticResource SecondaryBg}"
+                                         Foreground="{StaticResource AccentBlue}"/>
+                            <TextBlock x:Name="BatchProgressText" Grid.Row="1" 
+                                       Text="Ready to process" 
+                                       Foreground="{StaticResource TextSecondary}"
+                                       HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                        </Grid>
+
+                        <!-- Summary (hidden until processing complete) -->
+                        <Border x:Name="BatchSummaryBorder" Grid.Row="6" 
+                                Background="{StaticResource SecondaryBg}" 
+                                CornerRadius="8" Padding="15" Visibility="Collapsed">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="BatchSummaryText" Grid.Column="0"
+                                         Background="Transparent" BorderThickness="0"
+                                         Foreground="{StaticResource TextPrimary}"
+                                         TextWrapping="Wrap" IsReadOnly="True"
+                                         VerticalScrollBarVisibility="Auto"/>
+                                <StackPanel Grid.Column="1" Orientation="Vertical">
+                                    <Button Content="📋" Style="{StaticResource SecondaryButton}"
+                                            Margin="0,0,0,5" Padding="8,5"
+                                            Click="CopyBatchSummary_Click" ToolTip="Copy summary"/>
+                                    <Button Content="📂" Style="{StaticResource SecondaryButton}"
+                                            Padding="8,5"
+                                            Click="OpenBatchOutputFolder_Click" ToolTip="Open output folder"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Action Buttons -->
+                        <StackPanel Grid.Row="7" Orientation="Horizontal" 
+                                    HorizontalAlignment="Right" Margin="0,15,0,0">
+                            <Button x:Name="BatchResetButton" Content="🧹 Clear" 
+                                    Style="{StaticResource SecondaryButton}" 
+                                    Padding="15,10" Margin="0,0,10,0" MinWidth="100"
+                                    Click="BatchReset_Click"/>
+                            <Button x:Name="BatchCancelButton" Content="❌ Cancel" 
+                                    Style="{StaticResource SecondaryButton}" 
+                                    Padding="15,10" Margin="0,0,10,0" Width="130"
+                                    Foreground="{StaticResource AccentRed}"
+                                    BorderBrush="{StaticResource AccentRed}" BorderThickness="1"
+                                    IsEnabled="False" Click="BatchCancel_Click"/>
+                            <Button x:Name="BatchProcessButton" Content="🔄 Process" 
+                                    Style="{StaticResource ModernButton}" 
+                                    Padding="15,10" Width="130" IsEnabled="False"
+                                    Click="BatchProcess_Click"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
             </TabItem>
 
             <!-- History Tab -->

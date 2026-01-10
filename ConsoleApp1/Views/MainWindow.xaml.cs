@@ -59,6 +59,9 @@ namespace ConsoleApp1.Views
         private HistoryEntry? _currentDecryptEntry;
         private bool _encryptFavorite = false;
         private bool _decryptFavorite = false;
+        // Batch processing
+        private string? _batchFilePath;
+        private CancellationTokenSource? _batchCancellationSource;
         // private bool _showingFavoritesOnly = false; // Removed
         
         // Use ObservableCollection to prevent grid resets
@@ -892,5 +895,370 @@ namespace ConsoleApp1.Views
         {
 
         }
+
+        #region Batch Processing
+
+        private void BrowseBatchFile_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "Supported Files|*.xlsx;*.csv|Excel Files|*.xlsx|CSV Files|*.csv",
+                Title = "Select file to process"
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                _batchFilePath = dialog.FileName;
+                BatchFilePathTextBox.Text = System.IO.Path.GetFileName(_batchFilePath);
+                BatchFilePathTextBox.Foreground = (SolidColorBrush)FindResource("TextPrimary");
+                BatchProcessButton.IsEnabled = true;
+
+                // Load columns and auto-detect
+                LoadBatchColumns();
+                UpdateBatchOutputPath();
+            }
+        }
+
+        private void LoadBatchColumns()
+        {
+            if (string.IsNullOrEmpty(_batchFilePath)) return;
+
+            bool hasHeader = BatchHasHeaderCheckBox.IsChecked == true;
+            var headers = BatchProcessor.GetFileHeaders(_batchFilePath, hasHeader);
+
+            BatchColumnComboBox.Items.Clear();
+            foreach (var header in headers)
+            {
+                BatchColumnComboBox.Items.Add(header);
+            }
+
+            // Disable and dim pattern when no header
+            BatchPatternTextBox.IsEnabled = hasHeader;
+            BatchPatternLabel.Foreground = hasHeader 
+                ? (SolidColorBrush)FindResource("TextSecondary") 
+                : (SolidColorBrush)FindResource("TextMuted");
+            BatchPatternTextBox.Foreground = hasHeader
+                ? (SolidColorBrush)FindResource("TextPrimary")
+                : (SolidColorBrush)FindResource("TextMuted");
+
+            if (!hasHeader && headers.Count > 0)
+            {
+                // No header - auto-select first column
+                BatchColumnComboBox.SelectedIndex = 0;
+            }
+            else if (headers.Count > 0)
+            {
+                // Auto-select column matching "PhoneNumber"
+                string pattern = BatchPatternTextBox.Text;
+                try
+                {
+                    var regex = new System.Text.RegularExpressions.Regex(pattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                    foreach (var header in headers)
+                    {
+                        if (regex.IsMatch(header))
+                        {
+                            BatchColumnComboBox.SelectedItem = header;
+                            break;
+                        }
+                    }
+                }
+                catch { }
+            }
+
+            BatchColumnComboBox.IsEnabled = headers.Count > 0;
+        }
+
+        private void BatchColumn_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(_batchFilePath) || BatchColumnComboBox.SelectedItem == null) return;
+
+            // Auto-detect if data is encrypted or plaintext
+            AutoDetectBatchOperation();
+            UpdateBatchOutputPath();
+        }
+
+        private void AutoDetectBatchOperation()
+        {
+            if (string.IsNullOrEmpty(_batchFilePath)) return;
+
+            try
+            {
+                bool hasHeader = BatchHasHeaderCheckBox.IsChecked == true;
+                string columnName;
+
+                // Get column name - use selected item or default to first column
+                if (BatchColumnComboBox.SelectedItem != null)
+                {
+                    columnName = BatchColumnComboBox.SelectedItem.ToString() ?? "Column 1";
+                }
+                else
+                {
+                    // Fallback: use first column
+                    columnName = hasHeader ? "" : "Column 1";
+                    if (string.IsNullOrEmpty(columnName)) return;
+                }
+                
+                // Get first value from selected column
+                string? firstValue = BatchProcessor.GetFirstValue(_batchFilePath, columnName, hasHeader);
+                
+                if (!string.IsNullOrEmpty(firstValue))
+                {
+                    // Check if it looks like Base64 (encrypted)
+                    bool looksEncrypted = IsBase64String(firstValue) && firstValue.Length > 20;
+                    
+                    if (looksEncrypted)
+                    {
+                        BatchDecryptRadio.IsChecked = true;
+                    }
+                    else
+                    {
+                        BatchEncryptRadio.IsChecked = true;
+                    }
+                }
+            }
+            catch { }
+        }
+
+        private bool IsBase64String(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return false;
+            try
+            {
+                // Check if it matches Base64 pattern
+                var regex = new System.Text.RegularExpressions.Regex(@"^[A-Za-z0-9+/=]+$");
+                return regex.IsMatch(value) && value.Length % 4 == 0;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private void UpdateBatchOutputPath()
+        {
+            if (string.IsNullOrEmpty(_batchFilePath)) return;
+
+            bool encrypt = BatchEncryptRadio.IsChecked == true;
+            string suffix = encrypt ? "_encrypted" : "_decrypted";
+            string dir = System.IO.Path.GetDirectoryName(_batchFilePath) ?? "";
+            string name = System.IO.Path.GetFileNameWithoutExtension(_batchFilePath);
+            string ext = System.IO.Path.GetExtension(_batchFilePath);
+
+            _batchOutputPath = System.IO.Path.Combine(dir, name + suffix + ext);
+            _updatingOutputPath = true;
+            BatchOutputPathTextBox.Text = System.IO.Path.GetFileName(_batchOutputPath);
+            _updatingOutputPath = false;
+            BatchOutputPathTextBox.Foreground = (SolidColorBrush)FindResource("TextPrimary");
+        }
+
+        private string? _batchOutputPath;
+        private bool _updatingOutputPath = false;
+
+        private void BrowseOutputFile_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(_batchFilePath)) return;
+
+            var extension = System.IO.Path.GetExtension(_batchFilePath);
+            var saveDialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = extension == ".xlsx" ? "Excel Files|*.xlsx" : "CSV Files|*.csv",
+                FileName = System.IO.Path.GetFileName(_batchOutputPath ?? "output" + extension),
+                InitialDirectory = System.IO.Path.GetDirectoryName(_batchFilePath),
+                Title = "Choose output location"
+            };
+
+            if (saveDialog.ShowDialog() == true)
+            {
+                _batchOutputPath = saveDialog.FileName;
+                BatchOutputPathTextBox.Text = System.IO.Path.GetFileName(_batchOutputPath);
+            }
+        }
+
+        private void BatchHasHeader_Changed(object sender, RoutedEventArgs e)
+        {
+            LoadBatchColumns();
+            // Auto-detect runs via column selection change, but also call directly for no-header case
+            AutoDetectBatchOperation();
+            UpdateBatchOutputPath();
+        }
+
+        private void BatchOutputPath_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            // Skip if this is a programmatic update (not user edit)
+            if (_updatingOutputPath) return;
+            
+            // Update stored path when user edits manually - construct full path
+            if (!string.IsNullOrEmpty(BatchOutputPathTextBox.Text) && BatchOutputPathTextBox.Text != "(auto-generated)")
+            {
+                string dir = System.IO.Path.GetDirectoryName(_batchFilePath) ?? "";
+                string userFilename = BatchOutputPathTextBox.Text;
+                
+                // If user typed just a filename, combine with input directory
+                if (!System.IO.Path.IsPathRooted(userFilename))
+                {
+                    _batchOutputPath = System.IO.Path.Combine(dir, userFilename);
+                }
+                else
+                {
+                    _batchOutputPath = userFilename;
+                }
+                BatchOutputPathTextBox.Foreground = (SolidColorBrush)FindResource("TextPrimary");
+            }
+        }
+
+        private void CopyBatchSummary_Click(object sender, RoutedEventArgs e)
+        {
+            Clipboard.SetText(BatchSummaryText.Text);
+            UpdateStatus("✓ Summary copied to clipboard");
+        }
+
+        private async void BatchProcess_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(_batchFilePath))
+            {
+                UpdateStatus("⚠ Please select a file first");
+                return;
+            }
+
+            // Use stored output path or prompt
+            string outputPath = _batchOutputPath ?? "";
+            if (string.IsNullOrEmpty(outputPath))
+            {
+                UpdateBatchOutputPath();
+                outputPath = _batchOutputPath ?? "";
+            }
+
+            bool encrypt = BatchEncryptRadio.IsChecked == true;
+            bool hasHeader = BatchHasHeaderCheckBox.IsChecked == true;
+            string pattern = BatchColumnComboBox.SelectedItem?.ToString() ?? BatchPatternTextBox.Text;
+
+            // Prepare UI
+            BatchProcessButton.IsEnabled = false;
+            BatchCancelButton.IsEnabled = true;
+            BatchProgressBar.Value = 0;
+            BatchSummaryBorder.Visibility = Visibility.Collapsed;
+            _batchCancellationSource = new CancellationTokenSource();
+
+            var processor = new BatchProcessor(_config.Key, _config.IV);
+            long lastUpdate = 0;
+            processor.ProgressChanged += (current, total, _) =>
+            {
+                long now = DateTime.Now.Ticks;
+                if (now - lastUpdate > 500000) // 50ms (10,000 ticks per ms)
+                {
+                    lastUpdate = now;
+                    Dispatcher.Invoke(() =>
+                    {
+                        double percent = (double)current / total * 100;
+                        BatchProgressBar.Value = percent;
+                        BatchProgressText.Text = $"Processing row {current} of {total}...";
+                    });
+                }
+            };
+
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+            try
+            {
+                var result = await processor.ProcessFileAsync(
+                    _batchFilePath,
+                    outputPath,
+                    pattern,
+                    hasHeader,
+                    encrypt,
+                    _batchCancellationSource.Token);
+
+                stopwatch.Stop();
+                result.Duration = stopwatch.Elapsed;
+
+                // Show summary
+                BatchSummaryBorder.Visibility = Visibility.Visible;
+                if (result.Success)
+                {
+                    BatchProgressBar.Value = 100;
+                    BatchProgressText.Text = "✓ Complete!";
+                    BatchSummaryText.Text = $"✅ Processing complete!\n\n" +
+                        $"📊 Column: {result.TargetColumn}\n\n" +
+                        $"✓ Processed: {result.ProcessedRows}\n" +
+                        $"⏭ Skipped: {result.SkippedRows}\n" +
+                        $"❌ Failed: {result.FailedRows}\n" +
+                        $"⏱ Time: {result.Duration.TotalSeconds:F2}s\n\n" +
+                        $"📁 Saved to:\n{result.OutputPath}";
+                    UpdateStatus($"✓ Batch {(encrypt ? "encryption" : "decryption")} complete - {result.ProcessedRows} rows");
+                }
+                else
+                {
+                    BatchProgressText.Text = "❌ Error";
+                    BatchSummaryText.Text = $"❌ Error: {result.ErrorMessage}";
+                    UpdateStatus($"✗ Batch processing failed: {result.ErrorMessage}");
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                BatchProgressText.Text = "Cancelled";
+                BatchSummaryText.Text = "Operation was cancelled.";
+                BatchSummaryBorder.Visibility = Visibility.Visible;
+                UpdateStatus("Batch processing cancelled");
+            }
+            finally
+            {
+                BatchProcessButton.IsEnabled = true;
+                BatchCancelButton.IsEnabled = false;
+                _batchCancellationSource?.Dispose();
+                _batchCancellationSource = null;
+            }
+        }
+
+        private void BatchCancel_Click(object sender, RoutedEventArgs e)
+        {
+            _batchCancellationSource?.Cancel();
+        }
+
+        private void BatchReset_Click(object sender, RoutedEventArgs e)
+        {
+            // Reset fields
+            _batchFilePath = "";
+            _batchOutputPath = null;
+            
+            // Reset UI
+            BatchFilePathTextBox.Text = "Select a file (.xlsx or .csv)...";
+            BatchFilePathTextBox.Foreground = (SolidColorBrush)FindResource("TextSecondary");
+            
+            BatchHasHeaderCheckBox.IsChecked = true;
+            BatchColumnComboBox.Items.Clear();
+            BatchColumnComboBox.IsEnabled = false;
+            
+            BatchPatternTextBox.Text = ".*PhoneNumber.*";
+            BatchPatternTextBox.IsEnabled = true;
+            
+            BatchEncryptRadio.IsChecked = true;
+            
+            BatchOutputPathTextBox.Text = "(auto-generated)";
+            BatchOutputPathTextBox.Foreground = (SolidColorBrush)FindResource("TextSecondary");
+            
+            BatchProgressBar.Value = 0;
+            BatchProgressText.Text = "Ready to process";
+            
+            BatchSummaryBorder.Visibility = Visibility.Collapsed;
+            BatchSummaryText.Text = "";
+            
+            // Reset buttons
+            BatchProcessButton.IsEnabled = false;
+            BatchCancelButton.IsEnabled = false;
+            
+            UpdateStatus("Ready");
+        }
+
+        private void OpenBatchOutputFolder_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(_batchOutputPath)) return;
+            string? dir = System.IO.Path.GetDirectoryName(_batchOutputPath);
+            if (!string.IsNullOrEmpty(dir) && System.IO.Directory.Exists(dir))
+            {
+                System.Diagnostics.Process.Start("explorer.exe", dir);
+            }
+        }
+
+        #endregion
     }
 }
