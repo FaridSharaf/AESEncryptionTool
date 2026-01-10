@@ -5,7 +5,7 @@ A modern WPF desktop application for encrypting and decrypting text using **doub
 ![.NET](https://img.shields.io/badge/.NET-6.0-blue)
 ![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Version](https://img.shields.io/badge/Version-1.1-orange)
+![Version](https://img.shields.io/badge/Version-1.2-orange)
 
 ## ✨ Features
 
@@ -56,7 +56,7 @@ Decrypt reverses the process:
 
 The application features a tabbed layout with:
 - **Operations Tab**: Encrypt/Decrypt panels + Recent Items
-- **Batch Tab**: Process Excel/CSV files in bulk with drag & drop, preview, and row count
+- **Batch Tab**: Process Excel/CSV files in bulk with global drag & drop (from any tab), visual drop overlay, preview, and row count
 - **History Tab**: Searchable history with bookmark/copy/delete actions
 - **Bookmarks Tab**: Dedicated view for bookmarked items
 

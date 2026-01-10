@@ -175,12 +175,26 @@
         </Style>
     </Window.Resources>
 
-    <Grid Margin="15">
+    <Grid x:Name="MainGrid" Margin="15" AllowDrop="True" 
+          DragEnter="MainGrid_DragEnter" DragLeave="MainGrid_DragLeave" 
+          DragOver="MainGrid_DragOver" Drop="MainGrid_Drop">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/> <!-- Keys Config -->
             <RowDefinition Height="*"/>    <!-- Tabs -->
             <RowDefinition Height="Auto"/> <!-- Status Bar -->
         </Grid.RowDefinitions>
+        
+        <!-- Drop Overlay (hidden by default) -->
+        <Border x:Name="DropOverlay" Grid.RowSpan="3" Panel.ZIndex="999"
+                Background="#8038BDF8" CornerRadius="12" Visibility="Collapsed"
+                BorderBrush="{StaticResource AccentBlue}" BorderThickness="3">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Text="📥" FontSize="48" HorizontalAlignment="Center"/>
+                <TextBlock Text="Drop file to load in Batch" FontSize="18" 
+                           Foreground="White" FontWeight="SemiBold"
+                           HorizontalAlignment="Center" Margin="0,10,0,0"/>
+            </StackPanel>
+        </Border>
 
         <!-- Key/IV Section and Settings -->
         <Grid Grid.Row="0" Margin="0,0,0,10">
@@ -243,7 +257,7 @@
         </Grid>
 
         <!-- Tab Content -->
-        <TabControl Grid.Row="1" Margin="0,10,0,10">
+        <TabControl x:Name="MainTabControl" Grid.Row="1" Margin="0,10,0,10">
             <!-- Operations Tab -->
             <TabItem Header="Operations">
                 <Grid Margin="0,15,0,0">
@@ -519,7 +533,7 @@
                                     Click="BrowseOutputFile_Click" ToolTip="Choose output location"/>
                         </Grid>
 
-                        <!-- Preview Panel -->
+                        <!-- Preview Panel / Log Panel -->
                         <Border x:Name="BatchPreviewBorder" Grid.Row="5" Margin="0,0,0,15" 
                                 Background="{StaticResource SecondaryBg}" CornerRadius="8" Padding="10"
                                 Visibility="Collapsed">
@@ -528,11 +542,11 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
-                                <TextBlock Grid.Row="0" Text="📋 Preview (first 5 rows)" 
+                                <TextBlock x:Name="BatchPreviewHeader" Grid.Row="0" Text="📋 Preview" 
                                            Foreground="{StaticResource TextSecondary}" FontSize="12" Margin="0,0,0,8"/>
                                 <DataGrid x:Name="BatchPreviewDataGrid" Grid.Row="1" 
                                           AutoGenerateColumns="False" IsReadOnly="True"
-                                          MaxHeight="150" CanUserAddRows="False"
+                                          MaxHeight="100" CanUserAddRows="False"
                                           Background="Transparent" BorderThickness="0"
                                           HeadersVisibility="Column" GridLinesVisibility="Horizontal"
                                           HorizontalGridLinesBrush="{StaticResource BorderColor}">

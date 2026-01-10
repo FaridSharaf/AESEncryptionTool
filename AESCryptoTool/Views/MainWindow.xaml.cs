@@ -1161,6 +1161,7 @@ namespace AESCryptoTool.Views
             BatchCancelButton.IsEnabled = true;
             BatchProgressBar.Value = 0;
             BatchSummaryBorder.Visibility = Visibility.Collapsed;
+            BatchPreviewBorder.Visibility = Visibility.Collapsed; // Hide preview during processing
             _batchCancellationSource = new CancellationTokenSource();
 
             var processor = new BatchProcessor(_config.Key, _config.IV);
@@ -1298,6 +1299,82 @@ namespace AESCryptoTool.Views
             e.Handled = true;
         }
 
+        #region Global Drag & Drop
+        
+        private bool IsValidBatchFile(DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if (files.Length == 1)
+                {
+                    var ext = System.IO.Path.GetExtension(files[0]).ToLower();
+                    return ext == ".xlsx" || ext == ".csv";
+                }
+            }
+            return false;
+        }
+
+        private void MainGrid_DragEnter(object sender, DragEventArgs e)
+        {
+            if (IsValidBatchFile(e))
+            {
+                DropOverlay.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void MainGrid_DragLeave(object sender, DragEventArgs e)
+        {
+            DropOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private void MainGrid_DragOver(object sender, DragEventArgs e)
+        {
+            if (IsValidBatchFile(e))
+            {
+                e.Effects = DragDropEffects.Copy;
+                e.Handled = true;
+            }
+            else
+            {
+                e.Effects = DragDropEffects.None;
+                e.Handled = true;
+            }
+        }
+
+        private void MainGrid_Drop(object sender, DragEventArgs e)
+        {
+            DropOverlay.Visibility = Visibility.Collapsed;
+            
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if (files.Length == 1)
+                {
+                    var ext = System.IO.Path.GetExtension(files[0]).ToLower();
+                    if (ext == ".xlsx" || ext == ".csv")
+                    {
+                        // Switch to Batch tab
+                        MainTabControl.SelectedIndex = 1; // Batch is the 2nd tab (index 1)
+                        
+                        // Load the file
+                        _batchFilePath = files[0];
+                        BatchFilePathTextBox.Text = System.IO.Path.GetFileName(_batchFilePath);
+                        BatchFilePathTextBox.Foreground = (SolidColorBrush)FindResource("TextPrimary");
+                        BatchProcessButton.IsEnabled = true;
+
+                        LoadBatchColumns();
+                        UpdateBatchOutputPath();
+                        UpdateStatus($"✓ Loaded: {System.IO.Path.GetFileName(_batchFilePath)}");
+                        
+                        e.Handled = true;
+                    }
+                }
+            }
+        }
+        
+        #endregion
+
         private void BatchBorder_Drop(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
@@ -1339,12 +1416,15 @@ namespace AESCryptoTool.Views
                 bool hasHeader = BatchHasHeaderCheckBox.IsChecked == true;
                 string columnName = BatchColumnComboBox.SelectedItem.ToString() ?? "";
                 
-                var previewValues = BatchProcessor.GetPreviewRows(_batchFilePath, columnName, hasHeader, 5);
+                // Get 3 preview rows
+                var previewValues = BatchProcessor.GetPreviewRows(_batchFilePath, columnName, hasHeader, 3);
+                int totalRows = BatchProcessor.GetRowCount(_batchFilePath, hasHeader);
                 
                 if (previewValues.Count > 0)
                 {
                     var previewItems = previewValues.Select((v, i) => new { RowNumber = i + 1, Value = v }).ToList();
                     BatchPreviewDataGrid.ItemsSource = previewItems;
+                    BatchPreviewHeader.Text = $"📋 Preview (first {previewValues.Count} of {totalRows:N0} rows)";
                     BatchPreviewBorder.Visibility = Visibility.Visible;
                 }
                 else
@@ -1376,6 +1456,30 @@ namespace AESCryptoTool.Views
             {
                 BatchRowCountText.Text = "";
             }
+        }
+
+        private void ShowBatchLog(BatchResult result)
+        {
+            // Display processing log in preview area
+            var logItems = new List<object>();
+            
+            if (result.Success)
+            {
+                logItems.Add(new { RowNumber = "✓", Value = $"Processed: {result.ProcessedRows} rows" });
+                if (result.SkippedRows > 0)
+                    logItems.Add(new { RowNumber = "⏭", Value = $"Skipped: {result.SkippedRows} rows" });
+                if (result.FailedRows > 0)
+                    logItems.Add(new { RowNumber = "❌", Value = $"Failed: {result.FailedRows} rows" });
+                logItems.Add(new { RowNumber = "⏱", Value = $"Time: {result.Duration.TotalSeconds:F2}s" });
+            }
+            else
+            {
+                logItems.Add(new { RowNumber = "❌", Value = $"Error: {result.ErrorMessage}" });
+            }
+
+            BatchPreviewDataGrid.ItemsSource = logItems;
+            BatchPreviewHeader.Text = result.Success ? "📋 Processing Log" : "📋 Error Log";
+            BatchPreviewBorder.Visibility = Visibility.Visible;
         }
 
         private void OpenBatchOutputFolder_Click(object sender, RoutedEventArgs e)
