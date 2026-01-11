@@ -944,6 +944,12 @@ namespace AESCryptoTool.Views
 
         }
 
+        public void RefreshData()
+        {
+            RefreshHistory();
+            RefreshRecentItems();
+        }
+
         #region Batch Processing
 
         private void BrowseBatchFile_Click(object sender, RoutedEventArgs e)

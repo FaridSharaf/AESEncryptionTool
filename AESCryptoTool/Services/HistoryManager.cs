@@ -16,6 +16,31 @@ namespace AESCryptoTool.Services
         private static List<HistoryEntry>? _historyEntries;
         private static List<HistoryEntry>? _bookmarkEntries;
 
+        public static void ImportHistory(List<HistoryEntry> items)
+        {
+            if (_historyEntries == null) _historyEntries = LoadHistory();
+            _historyEntries.AddRange(items);
+            // Sort by Date descending
+            _historyEntries = _historyEntries.OrderByDescending(x => x.Timestamp).ToList();
+            SaveHistory();
+        }
+
+        public static void ImportBookmarks(List<HistoryEntry> items)
+        {
+            if (_bookmarkEntries == null) _bookmarkEntries = LoadBookmarks();
+            _bookmarkEntries.AddRange(items);
+            // Sort by Date descending
+            _bookmarkEntries = _bookmarkEntries.OrderByDescending(x => x.Timestamp).ToList();
+            SaveBookmarks();
+        }
+
+        // Helper for ImportService
+        public static List<HistoryEntry> GetBookmarks()
+        {
+             if (_bookmarkEntries == null) _bookmarkEntries = LoadBookmarks();
+             return _bookmarkEntries;
+        }
+
         #region History Methods
 
         /// <summary>

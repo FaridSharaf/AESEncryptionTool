@@ -5,7 +5,7 @@ A modern WPF desktop application for encrypting and decrypting text using **doub
 ![.NET](https://img.shields.io/badge/.NET-6.0-blue)
 ![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Version](https://img.shields.io/badge/Version-1.3-orange)
+![Version](https://img.shields.io/badge/Version-1.4-orange)
 
 ## ✨ Features
 
@@ -27,6 +27,7 @@ This provides an extra layer of protection, making brute-force attacks significa
 - **🔍 Search** - Search through history and bookmarks
 
 ### Data Management
+- **💾 Export/Import** - Backup your complete History and Bookmarks to JSON
 - **📜 History** - Track all encryption/decryption operations
 - **🔖 Bookmarks** - Mark important entries (stored separately)
 - **⚙️ Configurable Limits** - Set max records for history (500) and bookmarks (100)

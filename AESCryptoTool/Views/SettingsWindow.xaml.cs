@@ -135,6 +135,49 @@ namespace AESCryptoTool.Views
             }
         }
 
+        private async void ExportDataButton_Click(object sender, RoutedEventArgs e)
+        {
+            try 
+            {
+                // Prompt user? Or just do it. Service handles dialog.
+                // We export both History and Bookmarks by default for "Backup"
+                bool result = await Services.ImportExportService.ExportDataAsync(true, true);
+                if (result)
+                {
+                   CustomMessageBox.Show("Data exported successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                CustomMessageBox.Show($"Export failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async void ImportDataButton_Click(object sender, RoutedEventArgs e)
+        {
+             try 
+             {
+                 int count = await Services.ImportExportService.ImportDataAsync();
+                 if (count > 0)
+                 {
+                     CustomMessageBox.Show($"Successfully imported {count} items!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                     _mainWindow?.RefreshData();
+                 }
+                 else if (count == 0)
+                 {
+                     // Cancelled or empty
+                 }
+                 else 
+                 {
+                      CustomMessageBox.Show("Import failed or no valid data found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                 }
+             }
+             catch (Exception ex)
+             {
+                 CustomMessageBox.Show($"Import failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+             }
+        }
+
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
             Settings.AutoCopy = AutoCopyCheckBox.IsChecked == true;
