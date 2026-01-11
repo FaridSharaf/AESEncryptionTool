@@ -3,7 +3,235 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              StartupUri="Views/MainWindow.xaml">
     <Application.Resources>
-         
+        <!-- Default Theme Colors (Light Classic fallback) -->
+        <SolidColorBrush x:Key="PrimaryBg" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="SecondaryBg" Color="#F8FAFC"/>
+        <SolidColorBrush x:Key="CardBg" Color="#F8FAFC"/>
+        <SolidColorBrush x:Key="RowBg" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="HeaderBg" Color="#F8FAFC"/>
+        <SolidColorBrush x:Key="PrimaryAccent" Color="#2563EB"/>
+        <SolidColorBrush x:Key="AccentBlue" Color="#3B82F6"/>
+        <SolidColorBrush x:Key="AccentGreen" Color="#22C55E"/>
+        <SolidColorBrush x:Key="AccentPurple" Color="#A855F7"/>
+        <SolidColorBrush x:Key="AccentOrange" Color="#F97316"/>
+        <SolidColorBrush x:Key="AccentRed" Color="#EF4444"/>
+        <SolidColorBrush x:Key="AccentYellow" Color="#EAB308"/>
+        <SolidColorBrush x:Key="TextPrimary" Color="#0F172A"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#64748B"/>
+        <SolidColorBrush x:Key="TextMuted" Color="#64748B"/>
+        <SolidColorBrush x:Key="BorderColor" Color="#E2E8F0"/>
+        <SolidColorBrush x:Key="SelectionBg" Color="#E2E8F0"/>
+
+        <!-- Themed Window Style (must be explicitly applied) -->
+        <Style x:Key="ThemedWindow" TargetType="{x:Type Window}">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+            <Setter Property="Background" Value="{DynamicResource PrimaryBg}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="WindowChrome.WindowChrome">
+                <Setter.Value>
+                    <WindowChrome GlassFrameThickness="0" 
+                                  CornerRadius="0" 
+                                  CaptionHeight="40"
+                                  UseAeroCaptionButtons="True"
+                                  ResizeBorderThickness="5"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Window}">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="40"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                
+                                <!-- Title Bar -->
+                                <Grid Grid.Row="0" Background="{DynamicResource SecondaryBg}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <!-- Icon -->
+                                    <Image Grid.Column="0" Source="{TemplateBinding Icon}" 
+                                           Width="20" Height="20" Margin="15,0,10,0"
+                                           VerticalAlignment="Center"
+                                           RenderOptions.BitmapScalingMode="HighQuality"/>
+                                           
+                                    <!-- Title -->
+                                    <TextBlock Grid.Column="1" Text="{TemplateBinding Title}" 
+                                               VerticalAlignment="Center" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimary}"
+                                               TextTrimming="CharacterEllipsis"/>
+                                    
+                                    <!-- Caption Buttons -->
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" 
+                                                WindowChrome.IsHitTestVisibleInChrome="True">
+                                        <!-- Minimize -->
+                                        <Button x:Name="MinimizeButton" Width="46" Height="40" 
+                                                BorderThickness="0" Background="Transparent"
+                                                Foreground="{DynamicResource TextPrimary}"
+                                                FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                                Content="&#xE921;" ToolTip="Minimize"
+                                                Command="{x:Static SystemCommands.MinimizeWindowCommand}"
+                                                CommandParameter="{Binding RelativeSource={RelativeSource TemplatedParent}}"/>
+                                        <!-- Maximize/Restore -->
+                                        <Button x:Name="MaximizeButton" Width="46" Height="40"
+                                                BorderThickness="0" Background="Transparent"
+                                                Foreground="{DynamicResource TextPrimary}"
+                                                FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                                Content="&#xE922;" ToolTip="Maximize"
+                                                Command="{x:Static SystemCommands.MaximizeWindowCommand}"
+                                                CommandParameter="{Binding RelativeSource={RelativeSource TemplatedParent}}"/>
+                                        <!-- Close -->
+                                        <Button x:Name="CloseButton" Width="46" Height="40"
+                                                BorderThickness="0" Background="Transparent"
+                                                Foreground="{DynamicResource TextPrimary}"
+                                                FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                                Content="&#xE8BB;" ToolTip="Close"
+                                                Command="{x:Static SystemCommands.CloseWindowCommand}"
+                                                CommandParameter="{Binding RelativeSource={RelativeSource TemplatedParent}}"/>
+                                    </StackPanel>
+                                </Grid>
+                                
+                                <!-- Content -->
+                                <AdornerDecorator Grid.Row="1">
+                                    <ContentPresenter/>
+                                </AdornerDecorator>
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Button Styles -->
+        <Style x:Key="ModernButton" TargetType="{x:Type Button}">
+            <Setter Property="Background" Value="{DynamicResource PrimaryAccent}"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontFamily" Value="Segoe UI Emoji"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                              TextElement.FontFamily="Segoe UI Emoji"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SecondaryButton" TargetType="{x:Type Button}" BasedOn="{StaticResource ModernButton}">
+            <Setter Property="Background" Value="{DynamicResource CardBg}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+        </Style>
+
+        <!-- TextBox Style -->
+        <Style x:Key="InputTextBox" TargetType="{x:Type TextBox}">
+            <Setter Property="Background" Value="{DynamicResource RowBg}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="Margin" Value="0,5"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="SelectionBrush" Value="{DynamicResource PrimaryAccent}"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TextBox}">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost" Padding="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource PrimaryAccent}"/>
+                                <Setter TargetName="border" Property="BorderThickness" Value="2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ComboBox Styles (Fix for Dark Mode) -->
+        <Style TargetType="{x:Type ComboBoxItem}">
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ComboBoxItem}">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true">
+                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SecondaryBg}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource PrimaryAccent}"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="{x:Type ComboBox}">
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Background" Value="{DynamicResource RowBg}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="ItemContainerStyle" Value="{StaticResource {x:Type ComboBoxItem}}"/>
+        </Style>
+        
+        <!-- Label Style -->
+         <Style TargetType="{x:Type Label}">
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+            <Setter Property="Padding" Value="0,5"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+        
+        <Style TargetType="{x:Type CheckBox}">
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
     </Application.Resources>
 </Application>
 

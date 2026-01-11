@@ -1,15 +1,36 @@
 using System.Windows;
+using System.Windows.Controls;
 using AESCryptoTool.Models;
+using AESCryptoTool.Services;
+using System.Windows.Media;
 
 namespace AESCryptoTool.Views
 {
     public partial class SettingsWindow : Window
     {
         public AppSettings Settings { get; private set; }
+        private readonly MainWindow? _mainWindow;
+        private bool _isInitializing = true;
+        private string _originalTheme;
 
-        public SettingsWindow(AppSettings currentSettings)
+        public SettingsWindow(AppSettings currentSettings, MainWindow? mainWindow = null)
         {
             InitializeComponent();
+            
+            // Register window command bindings for custom title bar buttons
+            CommandBindings.Add(new System.Windows.Input.CommandBinding(SystemCommands.MinimizeWindowCommand, (s, e) => SystemCommands.MinimizeWindow(this)));
+            CommandBindings.Add(new System.Windows.Input.CommandBinding(SystemCommands.MaximizeWindowCommand, (s, e) => {
+                if (this.WindowState == WindowState.Maximized)
+                    SystemCommands.RestoreWindow(this);
+                else
+                    SystemCommands.MaximizeWindow(this);
+            }));
+            CommandBindings.Add(new System.Windows.Input.CommandBinding(SystemCommands.RestoreWindowCommand, (s, e) => SystemCommands.RestoreWindow(this)));
+            CommandBindings.Add(new System.Windows.Input.CommandBinding(SystemCommands.CloseWindowCommand, (s, e) => SystemCommands.CloseWindow(this)));
+            
+            _mainWindow = mainWindow;
+            _originalTheme = currentSettings.Theme;
+            
             Settings = new AppSettings
             {
                 AutoCopy = currentSettings.AutoCopy,
@@ -18,6 +39,7 @@ namespace AESCryptoTool.Views
                 MaxHistoryItems = currentSettings.MaxHistoryItems,
                 MaxBookmarkItems = currentSettings.MaxBookmarkItems,
                 Theme = currentSettings.Theme,
+                FontFamily = currentSettings.FontFamily,
                 WindowWidth = currentSettings.WindowWidth,
                 WindowHeight = currentSettings.WindowHeight,
                 WindowLeft = currentSettings.WindowLeft,
@@ -31,13 +53,85 @@ namespace AESCryptoTool.Views
             MaxHistoryItemsTextBox.Text = Settings.MaxHistoryItems.ToString();
             MaxBookmarkItemsTextBox.Text = Settings.MaxBookmarkItems.ToString();
             
-            foreach (System.Windows.Controls.ComboBoxItem item in ThemeComboBox.Items)
+            // Populate Theme ComboBox
+            ThemeComboBox.Items.Clear();
+            ComboBoxItem? itemToSelect = null;
+
+            // Light Themes
+            ThemeComboBox.Items.Add(new ComboBoxItem 
+            { 
+                Content = "── Light Themes ──", 
+                IsEnabled = false, 
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#94A3B8")) 
+            });
+
+            foreach (var theme in ThemeManager.GetLightThemes())
             {
-                if (item.Content.ToString() == Settings.Theme)
+                var item = new ComboBoxItem { Content = theme, Tag = theme };
+                ThemeComboBox.Items.Add(item);
+                if (theme == Settings.Theme) itemToSelect = item;
+            }
+
+            // Dark Themes
+            ThemeComboBox.Items.Add(new ComboBoxItem 
+            { 
+                Content = "── Dark Themes ──", 
+                IsEnabled = false, 
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#94A3B8")) 
+            });
+
+            foreach (var theme in ThemeManager.GetDarkThemes())
+            {
+                var item = new ComboBoxItem { Content = theme, Tag = theme };
+                ThemeComboBox.Items.Add(item);
+                if (theme == Settings.Theme) itemToSelect = item;
+            }
+
+            if (itemToSelect != null)
+            {
+                ThemeComboBox.SelectedItem = itemToSelect;
+            }
+            else
+            {
+                ThemeComboBox.SelectedIndex = 1; // Default to first actual theme if mismatch
+            }
+            
+            // Initialize Font dropdown
+            foreach (ComboBoxItem item in FontComboBox.Items)
+            {
+                if (item.Tag?.ToString() == Settings.FontFamily)
                 {
-                    item.IsSelected = true;
+                    FontComboBox.SelectedItem = item;
                     break;
                 }
+            }
+            if (FontComboBox.SelectedItem == null)
+                FontComboBox.SelectedIndex = 0;
+            
+            _isInitializing = false;
+        }
+
+        private void ThemeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isInitializing) return;
+            
+            if (ThemeComboBox.SelectedItem is ComboBoxItem item && item.Tag is string themeName)
+            {
+                Settings.Theme = themeName;
+                // Live preview
+                _mainWindow?.ApplyTheme(themeName);
+            }
+        }
+
+        private void FontComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isInitializing) return;
+            
+            if (FontComboBox.SelectedItem is ComboBoxItem item && item.Tag is string fontName)
+            {
+                Settings.FontFamily = fontName;
+                // Live preview
+                Services.ThemeManager.ApplyFont(fontName);
             }
         }
 
@@ -52,7 +146,7 @@ namespace AESCryptoTool.Views
             }
             else
             {
-                MessageBox.Show("Recent items count must be a positive number.", "Invalid Input", 
+                CustomMessageBox.Show("Recent items count must be a positive number.", "Invalid Input", 
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -63,7 +157,7 @@ namespace AESCryptoTool.Views
             }
             else
             {
-                MessageBox.Show("Max History must be a positive number.", "Invalid Input", 
+                CustomMessageBox.Show("Max History must be a positive number.", "Invalid Input", 
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -74,14 +168,9 @@ namespace AESCryptoTool.Views
             }
             else
             {
-                MessageBox.Show("Max Bookmarks must be a positive number.", "Invalid Input", 
+                CustomMessageBox.Show("Max Bookmarks must be a positive number.", "Invalid Input", 
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
-            }
-
-            if (ThemeComboBox.SelectedItem is System.Windows.Controls.ComboBoxItem selectedTheme)
-            {
-                Settings.Theme = selectedTheme.Content.ToString() ?? "Light";
             }
 
             DialogResult = true;
@@ -90,13 +179,18 @@ namespace AESCryptoTool.Views
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
+            // Revert theme if changed
+            if (Settings.Theme != _originalTheme)
+            {
+                _mainWindow?.ApplyTheme(_originalTheme);
+            }
             DialogResult = false;
             Close();
         }
 
         private const int MaxAllowedLimit = 1000;
 
-        private void MaxHistoryItemsTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        private void MaxHistoryItemsTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (int.TryParse(MaxHistoryItemsTextBox.Text, out int value) && value > MaxAllowedLimit)
             {
@@ -105,7 +199,7 @@ namespace AESCryptoTool.Views
             }
         }
 
-        private void MaxBookmarkItemsTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        private void MaxBookmarkItemsTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (int.TryParse(MaxBookmarkItemsTextBox.Text, out int value) && value > MaxAllowedLimit)
             {

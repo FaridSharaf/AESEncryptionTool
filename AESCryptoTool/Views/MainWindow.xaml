@@ -6,68 +6,18 @@
         Title="AESCryptoTool" Height="950" Width="850"
         MinHeight="500" MinWidth="800"
         WindowStartupLocation="CenterScreen"
-        Background="#0F172A"
+        Style="{StaticResource ThemedWindow}"
         Icon="/aes_crypto_tool_icon.png">
     <Window.Resources>
-        <!-- Color Palette - Deep Ocean Theme -->
-        <SolidColorBrush x:Key="PrimaryBg" Color="#0F172A"/>
-        <SolidColorBrush x:Key="SecondaryBg" Color="#1E293B"/>
-        <SolidColorBrush x:Key="CardBg" Color="#334155"/>
-        <SolidColorBrush x:Key="AccentBlue" Color="#38BDF8"/>
-        <SolidColorBrush x:Key="AccentGreen" Color="#34D399"/>
-        <SolidColorBrush x:Key="AccentPurple" Color="#818CF8"/>
-        <SolidColorBrush x:Key="AccentOrange" Color="#FB923C"/>
-        <SolidColorBrush x:Key="AccentRed" Color="#F87171"/>
-        <SolidColorBrush x:Key="AccentYellow" Color="#FACC15"/>
-        <SolidColorBrush x:Key="TextPrimary" Color="#F1F5F9"/>
-        <SolidColorBrush x:Key="TextSecondary" Color="#94A3B8"/>
-        <SolidColorBrush x:Key="TextMuted" Color="#64748B"/>
-        <SolidColorBrush x:Key="BorderColor" Color="#475569"/>
-        <SolidColorBrush x:Key="SelectionBg" Color="#475569"/>
+
 
         <!-- Button Style -->
-        <Style x:Key="ModernButton" TargetType="{x:Type Button}">
-            <Setter Property="Background" Value="{StaticResource AccentBlue}"/>
-            <Setter Property="Foreground" Value="#1E1E2E"/>
-            <Setter Property="Padding" Value="16,8"/>
-            <Setter Property="Margin" Value="5"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type Button}">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" 
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="6" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Opacity" Value="0.85"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Opacity" Value="0.7"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- Secondary Button Style -->
-        <Style x:Key="SecondaryButton" TargetType="{x:Type Button}" BasedOn="{StaticResource ModernButton}">
-            <Setter Property="Background" Value="{StaticResource CardBg}"/>
-            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
-        </Style>
-
-        <!-- Small Button Style -->
+        <!-- Button Styles inherited from App.xaml -->
         <Style x:Key="SmallButton" TargetType="{x:Type Button}" BasedOn="{StaticResource SecondaryButton}">
             <Setter Property="Padding" Value="8,4"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Margin" Value="2"/>
+            <Setter Property="FontFamily" Value="Segoe UI Emoji"/>
         </Style>
 
         <!-- TabItem Style -->
@@ -86,15 +36,15 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource AccentPurple}"/>
-                                <Setter Property="Foreground" Value="{StaticResource AccentPurple}"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AccentPurple}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource AccentPurple}"/>
                                 <Setter Property="FontWeight" Value="Bold"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="False">
-                                <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -109,45 +59,7 @@
         </Style>
 
         <!-- TextBox Style -->
-        <Style x:Key="InputTextBox" TargetType="{x:Type TextBox}">
-            <Setter Property="Background" Value="#252536"/>
-            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="12,10"/>
-            <Setter Property="Margin" Value="0,5"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontFamily" Value="Consolas"/>
-            <Setter Property="CaretBrush" Value="{StaticResource TextPrimary}"/>
-            <Setter Property="SelectionBrush" Value="{StaticResource AccentBlue}"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type TextBox}">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" 
-                                BorderBrush="{TemplateBinding BorderBrush}" 
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="6">
-                            <ScrollViewer x:Name="PART_ContentHost" 
-                                          Padding="{TemplateBinding Padding}"
-                                          VerticalScrollBarVisibility="Auto"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsFocused" Value="True">
-                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentBlue}"/>
-                                <Setter TargetName="border" Property="BorderThickness" Value="2"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- Label Style -->
-        <Style TargetType="{x:Type Label}">
-            <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
-            <Setter Property="Padding" Value="0,5"/>
-            <Setter Property="FontSize" Value="12"/>
-        </Style>
+        <!-- TextBox and Label Styles inherited from App.xaml -->
 
         <!-- Star Button Style -->
         <Style x:Key="StarButton" TargetType="{x:Type Button}">
@@ -155,13 +67,15 @@
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontFamily" Value="Segoe UI Emoji"/>
             <Setter Property="Padding" Value="4"/>
-            <Setter Property="Foreground" Value="{StaticResource AccentYellow}"/>
+            <Setter Property="Foreground" Value="{DynamicResource AccentYellow}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
                         <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                              TextElement.FontFamily="Segoe UI Emoji"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
@@ -170,7 +84,7 @@
 
         <!-- CheckBox Style for Dark Theme -->
         <Style TargetType="{x:Type CheckBox}">
-            <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
     </Window.Resources>
@@ -187,9 +101,9 @@
         <!-- Drop Overlay (hidden by default) -->
         <Border x:Name="DropOverlay" Grid.RowSpan="3" Panel.ZIndex="999"
                 Background="#8038BDF8" CornerRadius="12" Visibility="Collapsed"
-                BorderBrush="{StaticResource AccentBlue}" BorderThickness="3">
+                BorderBrush="{DynamicResource AccentBlue}" BorderThickness="3">
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                <TextBlock Text="📥" FontSize="48" HorizontalAlignment="Center"/>
+                <TextBlock Text="📥" FontSize="48" HorizontalAlignment="Center" FontFamily="Segoe UI Emoji"/>
                 <TextBlock Text="Drop file to load in Batch" FontSize="18" 
                            Foreground="White" FontWeight="SemiBold"
                            HorizontalAlignment="Center" Margin="0,10,0,0"/>
@@ -204,8 +118,9 @@
             </Grid.ColumnDefinitions>
 
             <Expander Grid.Column="0" Header="🔐 Key/IV Configuration (Plaintext)" 
-                      Foreground="{StaticResource TextPrimary}" IsExpanded="False" Margin="0,0,10,0">
-                <Border Background="{StaticResource CardBg}" CornerRadius="8" Padding="15" Margin="0,10,0,0">
+                      Foreground="{DynamicResource TextPrimary}" IsExpanded="False" Margin="0,0,10,0"
+                      FontFamily="Segoe UI Emoji">
+                <Border Background="{DynamicResource CardBg}" CornerRadius="8" Padding="15" Margin="0,10,0,0">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -248,7 +163,7 @@
                                 Click="SetDefaultKeysButton_Click" Margin="5,0,5,0"
                                 ToolTip="Set current keys as new default"/>
                             <Button Content="💾 Save" Style="{StaticResource ModernButton}"
-                                Background="{StaticResource AccentGreen}" Click="SaveKeysButton_Click"
+                                Background="{DynamicResource AccentGreen}" Click="SaveKeysButton_Click"
                                 ToolTip="Save keys to encrypted config" Margin="5,0,0,0"/>
                         </StackPanel>
                     </Grid>
@@ -275,7 +190,7 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- Encrypt Panel -->
-                        <Border Grid.Column="0" Background="{StaticResource CardBg}" CornerRadius="12" Padding="20">
+                        <Border Grid.Column="0" Background="{DynamicResource CardBg}" CornerRadius="12" Padding="20">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
@@ -286,8 +201,8 @@
                                 </Grid.RowDefinitions>
 
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
-                                    <TextBlock Text="🔒 ENCRYPT" FontWeight="Bold" FontSize="18" 
-                                               Foreground="{StaticResource AccentGreen}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="🔒 ENCRYPT" FontWeight="Bold" FontSize="18"
+                                               Foreground="{DynamicResource AccentGreen}" VerticalAlignment="Center"/>
                                     <CheckBox x:Name="EncryptAutoDetectCheckBox" Content="Auto-detect" 
                                               IsChecked="True" VerticalAlignment="Center" Margin="20,0,0,0"/>
                                 </StackPanel>
@@ -308,7 +223,7 @@
 
                                 <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10,0,10">
                                     <Button Content="🔐 Encrypt" Style="{StaticResource ModernButton}"
-                                            Background="{StaticResource AccentGreen}" Click="EncryptButton_Click"/>
+                                            Click="EncryptButton_Click"/>
                                     <Button Content="Clear" Style="{StaticResource SecondaryButton}"
                                             Click="EncryptClearButton_Click"/>
                                     <Button x:Name="EncryptFavoriteButton" Content="🏷️" Style="{StaticResource StarButton}"
@@ -332,7 +247,7 @@
                         </Border>
 
                         <!-- Decrypt Panel -->
-                        <Border Grid.Column="2" Background="{StaticResource CardBg}" CornerRadius="12" Padding="20">
+                        <Border Grid.Column="2" Background="{DynamicResource CardBg}" CornerRadius="12" Padding="20">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
@@ -343,8 +258,8 @@
                                 </Grid.RowDefinitions>
 
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
-                                    <TextBlock Text="🔓 DECRYPT" FontWeight="Bold" FontSize="18" 
-                                               Foreground="{StaticResource AccentPurple}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="🔓 DECRYPT" FontWeight="Bold" FontSize="18"
+                                               Foreground="{DynamicResource AccentPurple}" VerticalAlignment="Center"/>
                                     <CheckBox x:Name="DecryptAutoDetectCheckBox" Content="Auto-detect" 
                                               IsChecked="True" VerticalAlignment="Center" Margin="20,0,0,0"/>
                                 </StackPanel>
@@ -365,7 +280,7 @@
 
                                 <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10,0,10">
                                     <Button Content="🔓 Decrypt" Style="{StaticResource ModernButton}"
-                                            Background="{StaticResource AccentPurple}" Click="DecryptButton_Click"/>
+                                            Click="DecryptButton_Click"/>
                                     <Button Content="Clear" Style="{StaticResource SecondaryButton}"
                                             Click="DecryptClearButton_Click"/>
                                     <Button x:Name="DecryptFavoriteButton" Content="🏷️" Style="{StaticResource StarButton}"
@@ -396,8 +311,8 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Text="⚡ Recent (click to copy)" FontWeight="SemiBold" FontSize="12"
-                                       Foreground="{StaticResource TextSecondary}" Margin="0,0,0,8"/>
+                            <TextBlock Grid.Row="0" Text="⚡ Recent (click to copy)" FontWeight="SemiBold" FontSize="12" FontFamily="Segoe UI Emoji"
+                                       Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,8"/>
                             <ItemsControl x:Name="RecentItemsControl" Grid.Row="1">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
@@ -423,7 +338,7 @@
 
             <!-- Batch Processing Tab -->
             <TabItem Header="Batch">
-                <Border x:Name="BatchDropBorder" Background="{StaticResource CardBg}" CornerRadius="12" Padding="20" Margin="0,15,0,0"
+                <Border x:Name="BatchDropBorder" Background="{DynamicResource CardBg}" CornerRadius="12" Padding="20" Margin="0,15,0,0"
                         AllowDrop="True" Drop="BatchBorder_Drop" DragOver="BatchBorder_DragOver">
                     <Grid>
                         <Grid.RowDefinitions>
@@ -445,10 +360,10 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="📂 Batch Processing" FontWeight="Bold" FontSize="16" 
-                                       Foreground="{StaticResource TextPrimary}"/>
+                            <TextBlock Grid.Column="0" Text="📂 Batch Processing" FontWeight="Bold" FontSize="16" FontFamily="Segoe UI Emoji"
+                                       Foreground="{DynamicResource TextPrimary}"/>
                             <TextBlock x:Name="BatchRowCountText" Grid.Column="2" Text="" 
-                                       Foreground="{StaticResource TextSecondary}" FontSize="13"
+                                       Foreground="{DynamicResource TextSecondary}" FontSize="13"
                                        VerticalAlignment="Center"/>
                         </Grid>
 
@@ -463,7 +378,7 @@
                                      Style="{StaticResource InputTextBox}" Height="45"
                                      IsReadOnly="True" TextAlignment="Center" VerticalContentAlignment="Center"
                                      Text="📥 Drop file here or click Browse..."
-                                     Foreground="{StaticResource TextSecondary}"/>
+                                     Foreground="{DynamicResource TextSecondary}"/>
                             <Button Grid.Column="1" Content="📁 Browse" 
                                     Style="{StaticResource ModernButton}" 
                                     Margin="10,0,0,0" Padding="15,8" Height="45"
@@ -481,19 +396,19 @@
 
                             <CheckBox x:Name="BatchHasHeaderCheckBox" Grid.Column="0" 
                                       Content="File has header row" IsChecked="True"
-                                      Foreground="{StaticResource TextPrimary}" 
+                                      Foreground="{DynamicResource TextPrimary}" 
                                       VerticalAlignment="Center" Margin="0,0,20,0"
                                       Checked="BatchHasHeader_Changed" Unchecked="BatchHasHeader_Changed"/>
 
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="Column:" Foreground="{StaticResource TextSecondary}" 
+                                <TextBlock Text="Column:" Foreground="{DynamicResource TextSecondary}" 
                                            VerticalAlignment="Center" Margin="0,0,10,0"/>
                                 <ComboBox x:Name="BatchColumnComboBox" Width="180" Height="38"
                                           IsEnabled="False" SelectionChanged="BatchColumn_SelectionChanged"/>
                             </StackPanel>
 
                             <TextBlock x:Name="BatchPatternLabel" Grid.Column="2" Text="Pattern:" 
-                                       Foreground="{StaticResource TextSecondary}" 
+                                       Foreground="{DynamicResource TextSecondary}" 
                                        VerticalAlignment="Center" Margin="20,0,10,0"/>
                             <TextBox x:Name="BatchPatternTextBox" Grid.Column="3" 
                                      Style="{StaticResource InputTextBox}" Height="38" VerticalContentAlignment="Center"
@@ -502,13 +417,13 @@
 
                         <!-- Operation Selection -->
                         <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,15">
-                            <TextBlock Text="Operation:" Foreground="{StaticResource TextSecondary}" 
+                            <TextBlock Text="Operation:" Foreground="{DynamicResource TextSecondary}" 
                                        VerticalAlignment="Center" Margin="0,0,15,0"/>
                             <RadioButton x:Name="BatchEncryptRadio" Content="🔐 Encrypt" 
-                                         IsChecked="True" Foreground="{StaticResource TextPrimary}"
+                                         IsChecked="True" Foreground="{DynamicResource TextPrimary}"
                                          GroupName="BatchOperation" Margin="0,0,20,0"/>
                             <RadioButton x:Name="BatchDecryptRadio" Content="🔓 Decrypt" 
-                                         Foreground="{StaticResource TextPrimary}"
+                                         Foreground="{DynamicResource TextPrimary}"
                                          GroupName="BatchOperation"/>
                         </StackPanel>
 
@@ -520,12 +435,12 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <TextBlock Grid.Column="0" Text="Output:" Foreground="{StaticResource TextSecondary}" 
+                            <TextBlock Grid.Column="0" Text="Output:" Foreground="{DynamicResource TextSecondary}" 
                                        VerticalAlignment="Center" Margin="0,0,10,0"/>
                             <TextBox x:Name="BatchOutputPathTextBox" Grid.Column="1" 
                                      Style="{StaticResource InputTextBox}" Height="45" VerticalContentAlignment="Center"
                                      Text="(auto-generated)"
-                                     Foreground="{StaticResource TextSecondary}"
+                                     Foreground="{DynamicResource TextSecondary}"
                                      TextChanged="BatchOutputPath_TextChanged"/>
                             <Button Grid.Column="2" Content="📁" 
                                     Style="{StaticResource SecondaryButton}" 
@@ -535,21 +450,21 @@
 
                         <!-- Preview Panel / Log Panel -->
                         <Border x:Name="BatchPreviewBorder" Grid.Row="5" Margin="0,0,0,15" 
-                                Background="{StaticResource SecondaryBg}" CornerRadius="8" Padding="10"
+                                Background="{DynamicResource SecondaryBg}" CornerRadius="8" Padding="10"
                                 Visibility="Collapsed">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
-                                <TextBlock x:Name="BatchPreviewHeader" Grid.Row="0" Text="📋 Preview" 
-                                           Foreground="{StaticResource TextSecondary}" FontSize="12" Margin="0,0,0,8"/>
+                                <TextBlock x:Name="BatchPreviewHeader" Grid.Row="0" Text="📋 Preview" FontFamily="Segoe UI Emoji"
+                                           Foreground="{DynamicResource TextSecondary}" FontSize="12" Margin="0,0,0,8"/>
                                 <DataGrid x:Name="BatchPreviewDataGrid" Grid.Row="1" 
                                           AutoGenerateColumns="False" IsReadOnly="True"
                                           MaxHeight="100" CanUserAddRows="False"
                                           Background="Transparent" BorderThickness="0"
                                           HeadersVisibility="Column" GridLinesVisibility="Horizontal"
-                                          HorizontalGridLinesBrush="{StaticResource BorderColor}">
+                                          HorizontalGridLinesBrush="{DynamicResource BorderColor}">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="#" Binding="{Binding RowNumber}" Width="40"/>
                                         <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*"/>
@@ -567,17 +482,17 @@
 
                             <ProgressBar x:Name="BatchProgressBar" Grid.Row="0" 
                                          Height="20" Minimum="0" Maximum="100" Value="0"
-                                         Background="{StaticResource SecondaryBg}"
-                                         Foreground="{StaticResource AccentBlue}"/>
+                                         Background="{DynamicResource SecondaryBg}"
+                                         Foreground="{DynamicResource AccentBlue}"/>
                             <TextBlock x:Name="BatchProgressText" Grid.Row="1" 
                                        Text="Ready to process" 
-                                       Foreground="{StaticResource TextSecondary}"
+                                       Foreground="{DynamicResource TextSecondary}"
                                        HorizontalAlignment="Center" Margin="0,5,0,0"/>
                         </Grid>
 
                         <!-- Summary (hidden until processing complete) -->
                         <Border x:Name="BatchSummaryBorder" Grid.Row="7" 
-                                Background="{StaticResource SecondaryBg}" 
+                                Background="{DynamicResource SecondaryBg}" 
                                 CornerRadius="8" Padding="15" Visibility="Collapsed">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -586,7 +501,7 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBox x:Name="BatchSummaryText" Grid.Column="0"
                                          Background="Transparent" BorderThickness="0"
-                                         Foreground="{StaticResource TextPrimary}"
+                                         Foreground="{DynamicResource TextPrimary}"
                                          TextWrapping="Wrap" IsReadOnly="True"
                                          VerticalScrollBarVisibility="Auto"/>
                                 <StackPanel Grid.Column="1" Orientation="Vertical">
@@ -610,8 +525,8 @@
                             <Button x:Name="BatchCancelButton" Content="❌ Cancel" 
                                     Style="{StaticResource SecondaryButton}" 
                                     Padding="15,10" Margin="0,0,10,0" Width="130" Height="45"
-                                    Foreground="{StaticResource AccentRed}"
-                                    BorderBrush="{StaticResource AccentRed}" BorderThickness="1"
+                                    Foreground="{DynamicResource AccentRed}"
+                                    BorderBrush="{DynamicResource AccentRed}" BorderThickness="1"
                                     IsEnabled="False" Click="BatchCancel_Click"/>
                             <Button x:Name="BatchProcessButton" Content="🔄 Process" 
                                     Style="{StaticResource ModernButton}" 
@@ -624,7 +539,7 @@
 
             <!-- History Tab -->
             <TabItem Header="History">
-                <Border Background="{StaticResource CardBg}" CornerRadius="12" Padding="15" Margin="0,15,0,0">
+                <Border Background="{DynamicResource CardBg}" CornerRadius="12" Padding="15" Margin="0,15,0,0">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -638,8 +553,8 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <TextBlock x:Name="HistoryLabel" Grid.Column="0" Text="📜 History" FontWeight="Bold" FontSize="14" 
-                                       Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center"
+                            <TextBlock x:Name="HistoryLabel" Grid.Column="0" Text="📜 History" FontWeight="Bold" FontSize="14" FontFamily="Segoe UI Emoji"
+                                       Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"
                                        Cursor="Hand" MouseLeftButtonDown="HistoryLabel_Click"
                                        ToolTip="Click to show all history"/>
 
@@ -648,14 +563,14 @@
                                          TextChanged="HistorySearchTextBox_TextChanged" Padding="30,8,8,8"
                                          ToolTip="Search history by input, output, or note"/>
                                 <TextBlock Text="🔍" IsHitTestVisible="False" 
-                                           Foreground="{StaticResource TextSecondary}" 
+                                           Foreground="{DynamicResource TextSecondary}" 
                                            Margin="10,0,0,0" FontSize="13"
                                            VerticalAlignment="Center"/>
                             </Grid>
 
                             <Button Grid.Column="2" Content="🧹 Clear History" Style="{StaticResource SecondaryButton}"
                                     Click="ClearHistoryButton_Click" ToolTip="Delete all history entries (bookmarks preserved)"
-                                    Foreground="{StaticResource AccentRed}"/>
+                                    Foreground="{DynamicResource AccentRed}"/>
                         </Grid>
 
                         <DataGrid x:Name="HistoryDataGrid" Grid.Row="1" 
@@ -664,9 +579,9 @@
                                   MouseDoubleClick="HistoryDataGrid_MouseDoubleClick"
                                   CellEditEnding="HistoryDataGrid_CellEditEnding"
                                   Background="Transparent" BorderThickness="0"
-                                  RowBackground="#252536"
-                                  AlternatingRowBackground="{StaticResource CardBg}"
-                                  Foreground="{StaticResource TextPrimary}"
+                                  RowBackground="{DynamicResource RowBg}"
+                                  AlternatingRowBackground="{DynamicResource CardBg}"
+                                  Foreground="{DynamicResource TextPrimary}"
                                   GridLinesVisibility="None"
                                   HeadersVisibility="Column"
                                   CanUserResizeRows="False"
@@ -675,8 +590,8 @@
                                   HorizontalScrollBarVisibility="Auto">
                             <DataGrid.ColumnHeaderStyle>
                                 <Style TargetType="{x:Type DataGridColumnHeader}">
-                                    <Setter Property="Background" Value="#1E1E2E"/>
-                                    <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+                                    <Setter Property="Background" Value="{DynamicResource HeaderBg}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
                                     <Setter Property="FontWeight" Value="SemiBold"/>
                                     <Setter Property="HorizontalContentAlignment" Value="Center"/>
                                     <Setter Property="Template">
@@ -717,7 +632,7 @@
                                 <Style TargetType="{x:Type DataGridCell}">
                                     <Setter Property="Padding" Value="12,8"/>
                                     <Setter Property="BorderThickness" Value="0"/>
-                                    <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
                                     <Setter Property="VerticalAlignment" Value="Stretch"/>
                                     <Setter Property="Template">
                                         <Setter.Value>
@@ -731,8 +646,8 @@
                                     </Setter>
                                     <Style.Triggers>
                                         <Trigger Property="IsSelected" Value="True">
-                                            <Setter Property="Background" Value="{StaticResource SelectionBg}"/>
-                                            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+                                            <Setter Property="Background" Value="{DynamicResource SelectionBg}"/>
+                                            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
                                             <Setter Property="BorderThickness" Value="0"/>
                                         </Trigger>
                                     </Style.Triggers>
@@ -769,7 +684,7 @@
                                         <Style TargetType="{x:Type TextBox}">
                                             <Setter Property="Padding" Value="0"/>
                                             <Setter Property="Background" Value="#252536"/>
-                                            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+                                            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
                                             <Setter Property="BorderThickness" Value="0"/>
                                         </Style>
                                     </DataGridTextColumn.EditingElementStyle>
@@ -825,7 +740,7 @@
             </TabItem>
             <!-- Bookmarks Tab -->
             <TabItem Header="Bookmarks">
-                <Border Background="{StaticResource CardBg}" CornerRadius="12" Padding="15" Margin="0,15,0,0">
+                <Border Background="{DynamicResource CardBg}" CornerRadius="12" Padding="15" Margin="0,15,0,0">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -838,22 +753,22 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <TextBlock Grid.Column="0" Text="🔖 Bookmarks" FontWeight="Bold" FontSize="14" 
-                                       Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="0" Text="🔖 Bookmarks" FontWeight="Bold" FontSize="14" FontFamily="Segoe UI Emoji"
+                                       Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
 
                             <Grid Grid.Column="1" Margin="20,0">
                                 <TextBox x:Name="BookmarksSearchTextBox" Style="{StaticResource InputTextBox}" Height="35"
                                          TextChanged="BookmarksSearchTextBox_TextChanged" Padding="30,8,8,8"
                                          ToolTip="Search bookmarks by input, output, or note"/>
                                 <TextBlock Text="🔍" IsHitTestVisible="False" 
-                                           Foreground="{StaticResource TextSecondary}" 
+                                           Foreground="{DynamicResource TextSecondary}" 
                                            Margin="10,0,0,0" FontSize="13"
                                            VerticalAlignment="Center"/>
                             </Grid>
 
                             <Button Grid.Column="2" Content="🧹 Clear Bookmarks" Style="{StaticResource SecondaryButton}"
                                     Click="ClearBookmarksButton_Click" ToolTip="Remove all bookmarks"
-                                    Foreground="{StaticResource AccentRed}"/>
+                                    Foreground="{DynamicResource AccentRed}"/>
                         </Grid>
                         <!-- Bookmarks DataGrid -->
                         <DataGrid x:Name="BookmarksDataGrid" Grid.Row="1" 
@@ -862,9 +777,9 @@
                                   MouseDoubleClick="HistoryDataGrid_MouseDoubleClick"
                                   CellEditEnding="HistoryDataGrid_CellEditEnding"
                                   Background="Transparent" BorderThickness="0"
-                                  RowBackground="#252536"
-                                  AlternatingRowBackground="{StaticResource CardBg}"
-                                  Foreground="{StaticResource TextPrimary}"
+                                  RowBackground="{DynamicResource RowBg}"
+                                  AlternatingRowBackground="{DynamicResource CardBg}"
+                                  Foreground="{DynamicResource TextPrimary}"
                                   GridLinesVisibility="None"
                                   HeadersVisibility="Column"
                                   CanUserResizeRows="False"
@@ -874,8 +789,8 @@
                                   
                             <DataGrid.ColumnHeaderStyle>
                                 <Style TargetType="{x:Type DataGridColumnHeader}">
-                                    <Setter Property="Background" Value="#1E1E2E"/>
-                                    <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+                                    <Setter Property="Background" Value="{DynamicResource HeaderBg}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
                                     <Setter Property="FontWeight" Value="SemiBold"/>
                                     <Setter Property="HorizontalContentAlignment" Value="Center"/>
                                     <Setter Property="Template">
@@ -915,7 +830,7 @@
                                 <Style TargetType="{x:Type DataGridCell}">
                                     <Setter Property="Padding" Value="12,8"/>
                                     <Setter Property="BorderThickness" Value="0"/>
-                                    <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
                                     <Setter Property="VerticalAlignment" Value="Stretch"/>
                                     <Setter Property="Template">
                                         <Setter.Value>
@@ -929,8 +844,8 @@
                                     </Setter>
                                     <Style.Triggers>
                                         <Trigger Property="IsSelected" Value="True">
-                                            <Setter Property="Background" Value="{StaticResource SelectionBg}"/>
-                                            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+                                            <Setter Property="Background" Value="{DynamicResource SelectionBg}"/>
+                                            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
                                             <Setter Property="BorderThickness" Value="0"/>
                                         </Trigger>
                                     </Style.Triggers>
@@ -968,7 +883,7 @@
                                         <Style TargetType="{x:Type TextBox}">
                                             <Setter Property="Padding" Value="0"/>
                                             <Setter Property="Background" Value="#252536"/>
-                                            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+                                            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
                                             <Setter Property="BorderThickness" Value="0"/>
                                         </Style>
                                     </DataGridTextColumn.EditingElementStyle>
@@ -1025,7 +940,7 @@
         </TabControl>
 
         <!-- Status Bar (Moved to Row 2) -->
-        <Border Grid.Row="2" Background="{StaticResource SecondaryBg}" CornerRadius="6" 
+        <Border Grid.Row="2" Background="{DynamicResource SecondaryBg}" CornerRadius="6" 
                 Padding="15,10" Margin="0,10,0,0">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -1033,9 +948,9 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock x:Name="StatusTextBlock" Text="✓ Ready" FontSize="13"
-                           Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
+                           Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
                 <Button Grid.Column="1" Content="⚙️ Settings" Style="{StaticResource SecondaryButton}"
-                    Click="SettingsButton_Click" VerticalAlignment="Center" Height="30" Padding="10,0" Margin="10,0,0,0" RenderTransformOrigin="0.141,0.527" BorderBrush="#FF8F8D8D"/>
+                    Click="SettingsButton_Click" VerticalAlignment="Center" Height="30" Padding="10,0" Margin="10,0,0,0"/>
             </Grid>
         </Border>
     </Grid>

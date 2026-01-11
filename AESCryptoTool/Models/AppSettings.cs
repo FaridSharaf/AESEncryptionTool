@@ -8,6 +8,7 @@ namespace AESCryptoTool.Models
         public int MaxHistoryItems { get; set; } = 500;
         public int MaxBookmarkItems { get; set; } = 100;
         public string Theme { get; set; } = "Light";
+        public string FontFamily { get; set; } = "Segoe UI";
         public double WindowWidth { get; set; } = 1000;
         public double WindowHeight { get; set; } = 700;
         public double WindowLeft { get; set; } = 100;

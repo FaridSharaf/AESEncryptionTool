@@ -71,8 +71,21 @@ namespace AESCryptoTool.Views
         public MainWindow()
         {
             InitializeComponent();
+            
+            // Register window command bindings for custom title bar buttons
+            CommandBindings.Add(new CommandBinding(SystemCommands.MinimizeWindowCommand, (s, e) => SystemCommands.MinimizeWindow(this)));
+            CommandBindings.Add(new CommandBinding(SystemCommands.MaximizeWindowCommand, (s, e) => {
+                if (this.WindowState == WindowState.Maximized)
+                    SystemCommands.RestoreWindow(this);
+                else
+                    SystemCommands.MaximizeWindow(this);
+            }));
+            CommandBindings.Add(new CommandBinding(SystemCommands.RestoreWindowCommand, (s, e) => SystemCommands.RestoreWindow(this)));
+            CommandBindings.Add(new CommandBinding(SystemCommands.CloseWindowCommand, (s, e) => SystemCommands.CloseWindow(this)));
+            
             LoadSettings();
             LoadKeys();
+            ApplyThemeOnLoad();
             
             // Bind DataGrid to ObservableCollection
             HistoryDataGrid.ItemsSource = HistoryItems;
@@ -114,6 +127,37 @@ namespace AESCryptoTool.Views
             // Initial state: fully hidden
             KeyTextBox.Text = new string('•', _config.Key.Length > 0 ? _config.Key.Length : 16);
             IVTextBox.Text = new string('•', _config.IV.Length > 0 ? _config.IV.Length : 16);
+        }
+
+        #region Theme Management
+        
+        private void ApplyThemeOnLoad()
+        {
+            var savedTheme = ThemeManager.LoadSavedTheme();
+            ApplyTheme(savedTheme);
+        }
+        
+        public void ApplyTheme(string themeName)
+        {
+            ThemeManager.ApplyTheme(themeName);
+        }
+        
+        #endregion
+
+        // Settings
+        private void SettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            var settingsWindow = new SettingsWindow(_settings, this);
+            settingsWindow.Owner = this;
+            if (settingsWindow.ShowDialog() == true)
+            {
+                _settings = settingsWindow.Settings;
+                ConfigManager.SaveSettings(_settings);
+                EncryptAutoDetectCheckBox.IsChecked = _settings.AutoDetect;
+                DecryptAutoDetectCheckBox.IsChecked = _settings.AutoDetect;
+                RefreshRecentItems();
+                UpdateStatus("✓ Settings saved");
+            }
         }
 
         /// <summary>
@@ -220,7 +264,7 @@ namespace AESCryptoTool.Views
 
         private void ClearHistoryButton_Click(object sender, RoutedEventArgs e)
         {
-            var result = MessageBox.Show(
+            var result = CustomMessageBox.Show(
                 "Are you sure you want to delete ALL history entries?\nThis action cannot be undone.",
                 "Clear History",
                 MessageBoxButton.YesNo,
@@ -237,7 +281,7 @@ namespace AESCryptoTool.Views
 
         private void ClearBookmarksButton_Click(object sender, RoutedEventArgs e)
         {
-            var result = MessageBox.Show(
+            var result = CustomMessageBox.Show(
                 "Are you sure you want to remove ALL bookmarks?\nThis action cannot be undone.",
                 "Clear Bookmarks",
                 MessageBoxButton.YesNo,
@@ -331,7 +375,7 @@ namespace AESCryptoTool.Views
         {
             if (_keyMasked || _ivMasked)
             {
-                MessageBox.Show("Please show the keys (click 👁️) before saving.", "Keys Hidden", 
+                CustomMessageBox.Show("Please show the keys (click 👁️) before saving.", "Keys Hidden", 
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
@@ -343,7 +387,7 @@ namespace AESCryptoTool.Views
 
                 if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(iv))
                 {
-                    MessageBox.Show("Key and IV cannot be empty.", "Validation Error", 
+                    CustomMessageBox.Show("Key and IV cannot be empty.", "Validation Error", 
                         MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
@@ -351,14 +395,14 @@ namespace AESCryptoTool.Views
                 if (!ConfigManager.IsValidPlaintextKey(key))
                 {
                     int byteCount = System.Text.Encoding.UTF8.GetByteCount(key);
-                    MessageBox.Show($"Key must be exactly 16, 24, or 32 characters for AES.\n\nYour key has {byteCount} characters.", 
+                    CustomMessageBox.Show($"Key must be exactly 16, 24, or 32 characters for AES.\n\nYour key has {byteCount} characters.", 
                         "Invalid Key", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
                 if (!ConfigManager.IsValidPlaintextIV(iv))
                 {
-                    MessageBox.Show("IV must be exactly 16 characters (bytes).", 
+                    CustomMessageBox.Show("IV must be exactly 16 characters (bytes).", 
                         "Invalid IV", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
@@ -367,19 +411,19 @@ namespace AESCryptoTool.Views
                 ConfigManager.SaveKeys(key, iv, _config.KeyBase64, _config.IVBase64);
                 _config = ConfigManager.LoadKeys();
                 UpdateStatus("✓ Keys saved successfully");
-                MessageBox.Show("Keys saved successfully!", "Success", 
+                CustomMessageBox.Show("Keys saved successfully!", "Success", 
                     MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving keys: {ex.Message}", "Error", 
+                CustomMessageBox.Show($"Error saving keys: {ex.Message}", "Error", 
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         private void ResetKeysButton_Click(object sender, RoutedEventArgs e)
         {
-            var result = MessageBox.Show(
+            var result = CustomMessageBox.Show(
                 "This will reset the encryption keys to the default values.\n\nAre you sure?",
                 "Reset Keys",
                 MessageBoxButton.YesNo,
@@ -400,12 +444,12 @@ namespace AESCryptoTool.Views
                     IVTextBox.Text = new string('•', 16);
                     
                     UpdateStatus("✓ Keys reset to default");
-                    MessageBox.Show("Keys have been reset to default values.", "Success", 
+                    CustomMessageBox.Show("Keys have been reset to default values.", "Success", 
                         MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error resetting keys: {ex.Message}", "Error", 
+                    CustomMessageBox.Show($"Error resetting keys: {ex.Message}", "Error", 
                         MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
@@ -415,7 +459,7 @@ namespace AESCryptoTool.Views
         {
             if (_keyMasked || _ivMasked)
             {
-                MessageBox.Show("Please show the keys (click 👁️) first to set them as default.", "Keys Hidden", 
+                CustomMessageBox.Show("Please show the keys (click 👁️) first to set them as default.", "Keys Hidden", 
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
@@ -425,19 +469,19 @@ namespace AESCryptoTool.Views
 
             if (!ConfigManager.IsValidPlaintextKey(key))
             {
-                MessageBox.Show("Key must be 16, 24, or 32 characters.", "Invalid Key", 
+                CustomMessageBox.Show("Key must be 16, 24, or 32 characters.", "Invalid Key", 
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (!ConfigManager.IsValidPlaintextIV(iv))
             {
-                MessageBox.Show("IV must be 16 characters.", "Invalid IV", 
+                CustomMessageBox.Show("IV must be 16 characters.", "Invalid IV", 
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            var result = MessageBox.Show(
+            var result = CustomMessageBox.Show(
                 "This will set the current keys as the new default.\n\nThe 'Reset' button will restore to these keys in the future.\n\nContinue?",
                 "Set as Default",
                 MessageBoxButton.YesNo,
@@ -451,12 +495,12 @@ namespace AESCryptoTool.Views
                     ConfigManager.SaveKeys(key, iv, _config.KeyBase64, _config.IVBase64);
                     _config = ConfigManager.LoadKeys();
                     UpdateStatus("✓ Keys set as new default");
-                    MessageBox.Show("Current keys are now the default!", "Success", 
+                    CustomMessageBox.Show("Current keys are now the default!", "Success", 
                         MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error: {ex.Message}", "Error", 
+                    CustomMessageBox.Show($"Error: {ex.Message}", "Error", 
                         MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
@@ -554,7 +598,7 @@ namespace AESCryptoTool.Views
             catch (Exception ex)
             {
                 UpdateStatus($"✗ Error: {ex.Message}");
-                MessageBox.Show($"Encryption failed: {ex.Message}", "Error", 
+                CustomMessageBox.Show($"Encryption failed: {ex.Message}", "Error", 
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -673,7 +717,7 @@ namespace AESCryptoTool.Views
             catch (Exception ex)
             {
                 UpdateStatus($"✗ Error: {ex.Message}");
-                MessageBox.Show($"Decryption failed: {ex.Message}\n\nMake sure the input is valid encrypted text and the correct keys are configured.", 
+                CustomMessageBox.Show($"Decryption failed: {ex.Message}\n\nMake sure the input is valid encrypted text and the correct keys are configured.", 
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -813,7 +857,7 @@ namespace AESCryptoTool.Views
         {
             if (sender is Button button && button.Tag is HistoryEntry entry)
             {
-                var result = MessageBox.Show(
+                var result = CustomMessageBox.Show(
                     $"Delete this entry from HISTORY?\n(It will remain in Bookmarks if bookmarked)\n\nInput: {entry.Input.Substring(0, Math.Min(30, entry.Input.Length))}...",
                     "Confirm Delete",
                     MessageBoxButton.YesNo,
@@ -833,7 +877,7 @@ namespace AESCryptoTool.Views
         {
             if (sender is Button button && button.Tag is HistoryEntry entry)
             {
-                var result = MessageBox.Show(
+                var result = CustomMessageBox.Show(
                     $"Remove this bookmark?\n(It will remain in History)\n\nInput: {entry.Input.Substring(0, Math.Min(30, entry.Input.Length))}...",
                     "Confirm Remove Bookmark",
                     MessageBoxButton.YesNo,
@@ -855,22 +899,6 @@ namespace AESCryptoTool.Views
             {
                 Clipboard.SetText(entry.Output);
                 UpdateStatus("✓ Recent item copied to clipboard");
-            }
-        }
-
-        // Settings
-        private void SettingsButton_Click(object sender, RoutedEventArgs e)
-        {
-            var settingsWindow = new SettingsWindow(_settings);
-            settingsWindow.Owner = this;
-            if (settingsWindow.ShowDialog() == true)
-            {
-                _settings = settingsWindow.Settings;
-                ConfigManager.SaveSettings(_settings);
-                EncryptAutoDetectCheckBox.IsChecked = _settings.AutoDetect;
-                DecryptAutoDetectCheckBox.IsChecked = _settings.AutoDetect;
-                RefreshRecentItems();
-                UpdateStatus("✓ Settings saved");
             }
         }
 
