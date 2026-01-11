@@ -175,15 +175,18 @@ namespace AESCryptoTool.Services
                         csv.ReadHeader();
                         headers = csv.HeaderRecord;
 
-                        // Find target column by pattern
-                        var regex = new Regex(columnPattern, RegexOptions.IgnoreCase);
-                        for (int i = 0; i < headers.Length; i++)
+                        if (headers != null)
                         {
-                            if (regex.IsMatch(headers[i]))
+                            // Find target column by pattern
+                            var regex = new Regex(columnPattern, RegexOptions.IgnoreCase);
+                            for (int i = 0; i < headers.Length; i++)
                             {
-                                targetColumnIndex = i;
-                                targetColumnName = headers[i];
-                                break;
+                                if (regex.IsMatch(headers[i]))
+                                {
+                                    targetColumnIndex = i;
+                                    targetColumnName = headers[i];
+                                    break;
+                                }
                             }
                         }
 
