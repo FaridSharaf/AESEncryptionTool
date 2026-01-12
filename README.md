@@ -5,7 +5,7 @@ A modern WPF desktop application for encrypting and decrypting text using **doub
 ![.NET](https://img.shields.io/badge/.NET-6.0-blue)
 ![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Version](https://img.shields.io/badge/Version-1.4-orange)
+![Version](https://img.shields.io/badge/Version-2.0-orange)
 
 ## ✨ Features
 
