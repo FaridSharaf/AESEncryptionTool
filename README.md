@@ -6,27 +6,33 @@ A modern WPF desktop application for encrypting and decrypting text using **doub
 ![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey)
 ![License](https://img.shields.io/badge/License-MIT-green)
 ![Version](https://img.shields.io/badge/Version-2.0-orange)
+![Tests](https://img.shields.io/badge/Tests-43%20Passing-brightgreen)
 
 ## ✨ Features
 
 ### 🔐 Double Encryption
+
 The tool applies AES encryption **twice** for enhanced security:
+
 1. **First Pass**: Encrypts plaintext → Base64 ciphertext
 2. **Second Pass**: Encrypts the Base64 → Final encrypted output
 
 This provides an extra layer of protection, making brute-force attacks significantly harder.
 
 ### Core Features
+
 - **Auto-detect** - Automatically detects if input is encrypted or plain text
 - **Quick Copy** - Double-click output to copy, auto-copy option available
 - **Keyboard Shortcuts** - Press Enter to encrypt/decrypt
 
 ### UI & Organization
+
 - **🌊 Deep Ocean Theme** - Modern dark UI with Sky Blue & Teal accents
 - **📑 Tabbed Interface** - Organized into Operations, History, and Bookmarks tabs
 - **🔍 Search** - Search through history and bookmarks
 
 ### Data Management
+
 - **💾 Export/Import** - Backup your complete History and Bookmarks to JSON
 - **📜 History** - Track all encryption/decryption operations
 - **🔖 Bookmarks** - Mark important entries (stored separately)
@@ -34,6 +40,7 @@ This provides an extra layer of protection, making brute-force attacks significa
 - **🧹 Clear Functions** - Clear history or bookmarks independently
 
 ### Security
+
 - **🔐 Secure Key Storage** - Keys encrypted using Windows DPAPI
 - **👁️ Masked Keys** - Keys partially masked (first 2 + last 4 chars visible)
 - **📂 Separate Storage** - History and bookmarks in separate JSON files
@@ -56,6 +63,7 @@ Decrypt reverses the process:
 ## 📸 Screenshot
 
 The application features a tabbed layout with:
+
 - **Operations Tab**: Encrypt/Decrypt panels + Recent Items
 - **Batch Tab**: Process Excel/CSV files in bulk with global drag & drop (from any tab), visual drop overlay, preview, and row count
 - **History Tab**: Searchable history with bookmark/copy/delete actions
@@ -71,12 +79,14 @@ The application features a tabbed layout with:
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/FaridSharaf/AESEncryptionTool.git
    cd AESEncryptionTool
    ```
 
 2. **Build and run**
+
    ```bash
    cd AESCryptoTool
    dotnet build
@@ -94,27 +104,28 @@ The application features a tabbed layout with:
 
 ### Key Requirements
 
-| Key Type | Length | Description |
-|----------|--------|-------------|
-| **AES-128** | 16 characters | Standard security |
-| **AES-192** | 24 characters | Enhanced security |
-| **AES-256** | 32 characters | Maximum security (recommended) |
-| **IV** | 16 characters | Initialization Vector (always 16) |
+| Key Type    | Length        | Description                       |
+| ----------- | ------------- | --------------------------------- |
+| **AES-128** | 16 characters | Standard security                 |
+| **AES-192** | 24 characters | Enhanced security                 |
+| **AES-256** | 32 characters | Maximum security (recommended)    |
+| **IV**      | 16 characters | Initialization Vector (always 16) |
 
 ### Data Storage
 
 All data is stored in `%AppData%\AESEncryptionTool\`:
 
-| File | Description |
-|------|-------------|
+| File               | Description                           |
+| ------------------ | ------------------------------------- |
 | `config.encrypted` | Keys (DPAPI encrypted, user-specific) |
-| `settings.json` | User preferences |
-| `history.json` | All history entries |
-| `bookmarks.json` | Bookmarked entries (copies) |
+| `settings.json`    | User preferences                      |
+| `history.json`     | All history entries                   |
+| `bookmarks.json`   | Bookmarked entries (copies)           |
 
 ## 📖 Usage
 
 ### Encrypt / Decrypt
+
 1. Go to **Operations** tab
 2. Enter text in the respective panel
 3. Optionally click 🏷️ to bookmark before processing
@@ -122,12 +133,14 @@ All data is stored in `%AppData%\AESEncryptionTool\`:
 5. Output is auto-copied (if enabled)
 
 ### Managing History
+
 - **Search**: Filter by input, output, or note
 - **Bookmark**: Click 🔖 to add to Bookmarks tab
 - **Copy**: Click 📋 to copy output
 - **Delete**: Click 🗑️ to remove entry
 
 ### Settings (⚙️)
+
 - **Auto-copy**: Auto-copy results to clipboard
 - **Auto-detect**: Show hints for input type detection
 - **Recent items count**: Items in quick-access bar

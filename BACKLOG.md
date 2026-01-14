@@ -1,26 +1,20 @@
 # AESCryptoTool - Feature Backlog
 
-## 🎯 V2 Priorities (Recommended)
-| Feature | Category | Effort |
-|---------|----------|--------|
-| Multiple Key Profiles | Workflow | Medium |
-| Export/Import History | Import/Export | Easy |
-| Always on Top | UI | Easy |
-| More Keyboard Shortcuts | UI | Easy |
-| Statistics Dashboard | Analytics | Easy |
+## 🚀 V3 Priorities (Next Release)
+Focus: Optimization, Modernization, and UI Polish.
+
+| Feature | Category | Effort | Description |
+|---------|----------|--------|-------------|
+| **Upgrade to .NET 8** | Core | Easy | Upgrade from .NET 6 for 30% performance boost & longevity. |
+| **App Size Optimization** | Core | Easy | Enable Trimming/Compression to reduce size (160MB -> ~60MB). |
+| **Material Design UI** | UI | Medium | Implement modern Material Design (Cards, Shadows, Ripples). |
+| **Multiple Key Profiles** | Workflow | Medium | Save & Switch between different encryption keys (e.g. Dev/Prod). |
+| **Always on Top** | UI | Easy | Button to keep window float on top. |
 
 ---
 
-## 📦 Batch Processing Enhancements
-
-### Phase 1: Quick Wins (Easy)
-| Feature | Description |
-|---------|-------------|
-| **Drag & Drop** | Drop files directly onto the Batch tab |
-| **Preview Panel** | Show first 5 rows before processing |
-| **Row Count Display** | Show total rows before starting |
-| **Success/Fail Badges** | Visual indicators in summary |
-| **Open Output File** | Button to open the result file directly |
+## 📦 Batch Processing Enchancements
+**Current Status:** Phase 1 Complete (Drag & Drop, Preview, Row Count).
 
 ### Phase 2: Core Improvements (Medium)
 | Feature | Description |
@@ -29,7 +23,6 @@
 | **Column Name in Output** | Add a new column instead of replacing |
 | **Detailed Error Log** | Export failed rows with reasons |
 | **Pause/Resume** | Pause and resume batch processing |
-| **Recent Files List** | Quick-access to previously used files |
 | **Progress ETA** | Show estimated time remaining |
 | **Cancel Confirmation** | Confirm before aborting mid-process |
 
@@ -40,8 +33,6 @@
 | **Scheduling** | Schedule batch jobs to run later |
 | **Watch Folder** | Auto-process files dropped in a folder |
 | **Large File Streaming** | Process files > 100MB without memory issues |
-| **Parallel Processing** | Use multiple threads for speed |
-| **Validation Rules** | Pre-validate data format before processing |
 
 ---
 
@@ -53,31 +44,21 @@
 | Clear Clipboard on Exit | Auto-clear clipboard when closing | Easy |
 | Encryption Algorithms | Support for other algorithms (DES, Triple DES, Blowfish) | Hard |
 
-## 📦 Import/Export
+## 🎨 Future UI Ideas
 | Feature | Description | Effort |
 |---------|-------------|--------|
-| Export History | Export to CSV/JSON file | Easy |
-| Import History | Import from backup file | Easy |
-| Export Keys | Secure key backup (password-protected) | Medium |
-
-## 🎨 UI Improvements
-| Feature | Description | Effort |
-|---------|-------------|--------|
-| Multiple Themes | Light mode, more dark themes | Medium |
 | System Tray | Minimize to tray, quick-access | Medium |
-| Always on Top | Toggle to keep window visible | Easy |
 | Compact Mode | Smaller UI for less screen space | Medium |
 | Keyboard Shortcuts | More shortcuts (Ctrl+E, Ctrl+D, etc.) | Easy |
 
 ## ⚡ Workflow Improvements
 | Feature | Description | Effort |
 |---------|-------------|--------|
-| Multiple Key Profiles | Save different Key/IV sets with names | Medium |
 | Quick Actions | Right-click context menu | Medium |
 | Clipboard Monitoring | Auto-detect encrypted text in clipboard | Medium |
 | Compare Tool | Compare two encrypted values | Easy |
 
-## 📊 Analytics & Info
+## 📊 Analytics
 | Feature | Description | Effort |
 |---------|-------------|--------|
 | Statistics | Total encryptions, decryptions, favorites | Easy |
@@ -85,7 +66,10 @@
 
 ---
 
-**Legend:**
-- Easy = < 2 hours
-- Medium = 2-8 hours
-- Hard = 1-2 days
+## ✅ Completed (V1 - V2)
+- [x] **Import/Export History** (V2.0)
+- [x] **Batch Drag & Drop** (V2.0)
+- [x] **Batch Preview** (V2.0)
+- [x] **Themes (Deep Ocean)** (V1.3)
+- [x] **Double AES Encryption** (V1.0)
+- [x] **History & Bookmarks** (V1.0)
