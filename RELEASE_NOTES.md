@@ -8,6 +8,7 @@
 
 - **Upgraded to .NET 8**: ~30% faster runtime performance and long-term support.
 - **Smaller Build Size**: Executable reduced from 164MB to 72MB (56% smaller) via compression.
+- **System Tray Support**: Added "Minimize to Tray" and "Close to Tray" options in Settings.
 - **All 43 Tests Passing**: Verified compatibility with .NET 8.
 
 ---

@@ -3,6 +3,8 @@ using System.Linq;
 
 namespace AESCryptoTool.Views
 {
+    using Application = System.Windows.Application;
+    
     public partial class CustomMessageBox : Window
     {
         public MessageBoxResult Result { get; private set; } = MessageBoxResult.None;

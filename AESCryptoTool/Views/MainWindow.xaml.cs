@@ -7,6 +7,16 @@ using System.Windows.Media;
 using AESCryptoTool.Models;
 using AESCryptoTool.Services;
 
+// Resolve WPF vs WinForms conflicts
+using KeyEventArgs = System.Windows.Input.KeyEventArgs;
+using TextBox = System.Windows.Controls.TextBox;
+using DragEventArgs = System.Windows.DragEventArgs;
+using Application = System.Windows.Application;
+using Clipboard = System.Windows.Clipboard;
+using Button = System.Windows.Controls.Button;
+using DataFormats = System.Windows.DataFormats;
+using DragDropEffects = System.Windows.DragDropEffects;
+
 namespace AESCryptoTool.Views
 {
     /// <summary>
@@ -67,6 +77,9 @@ namespace AESCryptoTool.Views
         // Use ObservableCollection to prevent grid resets
         public System.Collections.ObjectModel.ObservableCollection<HistoryEntry> HistoryItems { get; set; } = new();
         public System.Collections.ObjectModel.ObservableCollection<HistoryEntry> BookmarksItems { get; set; } = new();
+        
+        // System Tray
+        private System.Windows.Forms.NotifyIcon? _notifyIcon;
 
         public MainWindow()
         {
@@ -103,6 +116,12 @@ namespace AESCryptoTool.Views
 
             LoadHistory();
             SetupKeyboardShortcuts();
+            SetupSystemTray();
+            
+            // Subscribe to window events for tray behavior
+            this.StateChanged += MainWindow_StateChanged;
+            this.Closing += MainWindow_Closing;
+            
             UpdateStatus("✓ Ready - Using double encryption (plaintext keys)");
         }
 
@@ -1524,6 +1543,97 @@ namespace AESCryptoTool.Views
             {
                 System.Diagnostics.Process.Start("explorer.exe", dir);
             }
+        }
+
+        #endregion
+
+        #region System Tray
+
+        private void SetupSystemTray()
+        {
+            _notifyIcon = new System.Windows.Forms.NotifyIcon();
+            
+            // Load icon from application resources
+            var iconPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "aes_crypto_tool.ico");
+            if (System.IO.File.Exists(iconPath))
+            {
+                _notifyIcon.Icon = new System.Drawing.Icon(iconPath);
+            }
+            else
+            {
+                // Fallback: use default icon
+                _notifyIcon.Icon = System.Drawing.SystemIcons.Application;
+            }
+            
+            _notifyIcon.Text = "AES Crypto Tool";
+            _notifyIcon.Visible = false;
+            
+            // Double-click to restore
+            _notifyIcon.DoubleClick += (s, e) => RestoreFromTray();
+            
+            // Context menu
+            var contextMenu = new System.Windows.Forms.ContextMenuStrip();
+            contextMenu.Items.Add("Show", null, (s, e) => RestoreFromTray());
+            contextMenu.Items.Add(new System.Windows.Forms.ToolStripSeparator());
+            contextMenu.Items.Add("Exit", null, (s, e) => ExitApplication());
+            _notifyIcon.ContextMenuStrip = contextMenu;
+        }
+
+        private void MainWindow_StateChanged(object? sender, EventArgs e)
+        {
+            if (WindowState == WindowState.Minimized && _settings.MinimizeToTray)
+            {
+                HideToTray();
+            }
+        }
+
+        private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (_settings.CloseToTray)
+            {
+                e.Cancel = true;
+                HideToTray();
+            }
+            else
+            {
+                // Clean up tray icon
+                if (_notifyIcon != null)
+                {
+                    _notifyIcon.Visible = false;
+                    _notifyIcon.Dispose();
+                }
+            }
+        }
+
+        private void HideToTray()
+        {
+            this.Hide();
+            if (_notifyIcon != null)
+            {
+                _notifyIcon.Visible = true;
+                _notifyIcon.ShowBalloonTip(1000, "AES Crypto Tool", "Running in system tray", System.Windows.Forms.ToolTipIcon.Info);
+            }
+        }
+
+        private void RestoreFromTray()
+        {
+            this.Show();
+            this.WindowState = WindowState.Normal;
+            this.Activate();
+            if (_notifyIcon != null)
+            {
+                _notifyIcon.Visible = false;
+            }
+        }
+
+        private void ExitApplication()
+        {
+            if (_notifyIcon != null)
+            {
+                _notifyIcon.Visible = false;
+                _notifyIcon.Dispose();
+            }
+            System.Windows.Application.Current.Shutdown();
         }
 
         #endregion

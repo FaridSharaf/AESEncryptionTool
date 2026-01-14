@@ -9,6 +9,9 @@ using AESCryptoTool.Models;
 
 namespace AESCryptoTool.Services
 {
+    using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
+    using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
+    
     public class BackendData
     {
         public string Version { get; set; } = "1.0";

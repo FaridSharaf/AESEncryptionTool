@@ -6,6 +6,9 @@ using System.Windows.Media;
 
 namespace AESCryptoTool.Views
 {
+    using Color = System.Windows.Media.Color;
+    using ColorConverter = System.Windows.Media.ColorConverter;
+    
     public partial class SettingsWindow : Window
     {
         public AppSettings Settings { get; private set; }
@@ -44,7 +47,9 @@ namespace AESCryptoTool.Views
                 WindowHeight = currentSettings.WindowHeight,
                 WindowLeft = currentSettings.WindowLeft,
                 WindowTop = currentSettings.WindowTop,
-                IsMaximized = currentSettings.IsMaximized
+                IsMaximized = currentSettings.IsMaximized,
+                MinimizeToTray = currentSettings.MinimizeToTray,
+                CloseToTray = currentSettings.CloseToTray
             };
 
             AutoCopyCheckBox.IsChecked = Settings.AutoCopy;
@@ -52,6 +57,8 @@ namespace AESCryptoTool.Views
             RecentItemsCountTextBox.Text = Settings.RecentItemsCount.ToString();
             MaxHistoryItemsTextBox.Text = Settings.MaxHistoryItems.ToString();
             MaxBookmarkItemsTextBox.Text = Settings.MaxBookmarkItems.ToString();
+            MinimizeToTrayCheckBox.IsChecked = Settings.MinimizeToTray;
+            CloseToTrayCheckBox.IsChecked = Settings.CloseToTray;
             
             // Populate Theme ComboBox
             ThemeComboBox.Items.Clear();
@@ -215,6 +222,10 @@ namespace AESCryptoTool.Views
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
+
+            // System Tray settings
+            Settings.MinimizeToTray = MinimizeToTrayCheckBox.IsChecked == true;
+            Settings.CloseToTray = CloseToTrayCheckBox.IsChecked == true;
 
             DialogResult = true;
             Close();

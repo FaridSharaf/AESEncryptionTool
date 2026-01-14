@@ -33,9 +33,9 @@ This provides an extra layer of protection, making brute-force attacks significa
 
 ### Data Management
 
-- **💾 Export/Import** - Backup your complete History and Bookmarks to JSON
-- **📜 History** - Track all encryption/decryption operations
-- **🔖 Bookmarks** - Mark important entries (stored separately)
+- **Secure Storage**: Uses Windows DPAPI to securely store your AES keys and IVs on your local machine.
+- **System Tray**: Option to minimize or close the app to the system tray to keep it running in the background.
+- **History Tracking**: Automatically saves your recent encryption/decryption operations (in memory or encrypted local file).mportant entries (stored separately)
 - **⚙️ Configurable Limits** - Set max records for history (500) and bookmarks (100)
 - **🧹 Clear Functions** - Clear history or bookmarks independently
 

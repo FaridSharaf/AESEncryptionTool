@@ -14,6 +14,10 @@ namespace AESCryptoTool.Models
         public double WindowLeft { get; set; } = 100;
         public double WindowTop { get; set; } = 100;
         public bool IsMaximized { get; set; } = false;
+        
+        // System Tray Settings
+        public bool MinimizeToTray { get; set; } = false;
+        public bool CloseToTray { get; set; } = false;
     }
 }
 

@@ -5,6 +5,10 @@ using System.Windows.Media;
 
 namespace AESCryptoTool.Services
 {
+    using Color = System.Windows.Media.Color;
+    using ColorConverter = System.Windows.Media.ColorConverter;
+    using FontFamily = System.Windows.Media.FontFamily;
+    using Application = System.Windows.Application;
     public class Theme
     {
         public string Name { get; set; } = string.Empty;
