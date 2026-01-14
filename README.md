@@ -2,10 +2,10 @@
 
 A modern WPF desktop application for encrypting and decrypting text using **double AES encryption**. Built for developers who need to quickly encrypt/decrypt sensitive data like phone numbers, client IDs, or other identifiers during debugging.
 
-![.NET](https://img.shields.io/badge/.NET-6.0-blue)
+![.NET](https://img.shields.io/badge/.NET-8.0-blue)
 ![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Version](https://img.shields.io/badge/Version-2.0-orange)
+![Version](https://img.shields.io/badge/Version-2.1-orange)
 ![Tests](https://img.shields.io/badge/Tests-43%20Passing-brightgreen)
 
 ## ✨ Features

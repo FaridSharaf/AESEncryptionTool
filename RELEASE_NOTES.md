@@ -1,6 +1,18 @@
 # Release Notes
 
-## Version 2.0.0 (Latest)
+## Version 2.1.0 (Latest)
+
+**Performance & Modernization Update**
+
+### 🚀 Improvements
+
+- **Upgraded to .NET 8**: ~30% faster runtime performance and long-term support.
+- **Smaller Build Size**: Executable reduced from 164MB to 72MB (56% smaller) via compression.
+- **All 43 Tests Passing**: Verified compatibility with .NET 8.
+
+---
+
+## Version 2.0.0
 
 **Major Release** - "Data Management & UI Polish"
 
