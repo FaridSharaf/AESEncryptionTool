@@ -175,7 +175,8 @@
         <TabControl x:Name="MainTabControl" Grid.Row="1" Margin="0,10,0,10">
             <!-- Operations Tab -->
             <TabItem Header="Operations">
-                <Grid Margin="0,15,0,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,10,0">
+                    <Grid Margin="0,15,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/> <!-- Encrypt/Decrypt Panels -->
                         <RowDefinition Height="Auto"/> <!-- Recent Items -->
@@ -334,10 +335,12 @@
                         </Grid>
                     </Border>
                 </Grid>
+                </ScrollViewer>
             </TabItem>
 
             <!-- Batch Processing Tab -->
             <TabItem Header="Batch">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,10,0">
                 <Border x:Name="BatchDropBorder" Background="{DynamicResource CardBg}" CornerRadius="12" Padding="20" Margin="0,15,0,0"
                         AllowDrop="True" Drop="BatchBorder_Drop" DragOver="BatchBorder_DragOver">
                     <Grid>
@@ -534,7 +537,9 @@
                                     Click="BatchProcess_Click"/>
                         </StackPanel>
                     </Grid>
+
                 </Border>
+                </ScrollViewer>
             </TabItem>
 
             <!-- History Tab -->

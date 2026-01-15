@@ -80,6 +80,7 @@ namespace AESCryptoTool.Views
         
         // System Tray
         private System.Windows.Forms.NotifyIcon? _notifyIcon;
+        private Button? _minimizeButton;
 
         public MainWindow()
         {
@@ -161,6 +162,21 @@ namespace AESCryptoTool.Views
             ThemeManager.ApplyTheme(themeName);
         }
         
+        public override void OnApplyTemplate()
+        {
+            base.OnApplyTemplate();
+            _minimizeButton = GetTemplateChild("MinimizeButton") as Button;
+            UpdateMinimizeTooltip();
+        }
+
+        private void UpdateMinimizeTooltip()
+        {
+            if (_minimizeButton != null)
+            {
+                _minimizeButton.ToolTip = _settings.MinimizeToTray ? "Minimize to Tray" : "Minimize";
+            }
+        }
+        
         #endregion
 
         // Settings
@@ -175,6 +191,7 @@ namespace AESCryptoTool.Views
                 EncryptAutoDetectCheckBox.IsChecked = _settings.AutoDetect;
                 DecryptAutoDetectCheckBox.IsChecked = _settings.AutoDetect;
                 RefreshRecentItems();
+                UpdateMinimizeTooltip();
                 UpdateStatus("✓ Settings saved");
             }
         }
@@ -1553,15 +1570,21 @@ namespace AESCryptoTool.Views
         {
             _notifyIcon = new System.Windows.Forms.NotifyIcon();
             
-            // Load icon from application resources
-            var iconPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "aes_crypto_tool.ico");
-            if (System.IO.File.Exists(iconPath))
+            // Load icon from application
+            try
             {
-                _notifyIcon.Icon = new System.Drawing.Icon(iconPath);
+                var exePath = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName;
+                if (!string.IsNullOrEmpty(exePath))
+                {
+                    _notifyIcon.Icon = System.Drawing.Icon.ExtractAssociatedIcon(exePath);
+                }
+                else
+                {
+                    _notifyIcon.Icon = System.Drawing.SystemIcons.Application;
+                }
             }
-            else
+            catch
             {
-                // Fallback: use default icon
                 _notifyIcon.Icon = System.Drawing.SystemIcons.Application;
             }
             

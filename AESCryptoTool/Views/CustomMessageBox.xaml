@@ -14,9 +14,11 @@
 
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,25">
             <TextBlock x:Name="IconText" Text="ℹ️" FontSize="32" VerticalAlignment="Top" Margin="0,0,20,0" FontFamily="Segoe UI Emoji"/>
-            <TextBlock x:Name="MessageText" Text="Message content..." TextWrapping="Wrap" 
-                       VerticalAlignment="Center" FontSize="14" Foreground="{DynamicResource TextPrimary}"
-                       MaxWidth="310" LineHeight="20"/>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="300" MaxWidth="320">
+                <TextBlock x:Name="MessageText" Text="Message content..." TextWrapping="Wrap" 
+                           VerticalAlignment="Top" FontSize="14" Foreground="{DynamicResource TextPrimary}"
+                           MaxWidth="310" LineHeight="20"/>
+            </ScrollViewer>
         </StackPanel>
 
         <StackPanel x:Name="ButtonPanel" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
