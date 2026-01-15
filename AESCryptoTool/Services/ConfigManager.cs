@@ -37,16 +37,11 @@ namespace AESCryptoTool.Services
         /// <summary>
         /// Saves keys encrypted using Windows DPAPI
         /// </summary>
-        public static void SaveKeys(string key, string iv, string keyBase64, string ivBase64)
+        /// <summary>
+        /// Saves the entire configuration including profiles
+        /// </summary>
+        public static void SaveConfiguration(AppConfig config)
         {
-            var config = new AppConfig
-            {
-                Key = key,
-                IV = iv,
-                KeyBase64 = keyBase64,
-                IVBase64 = ivBase64
-            };
-
             string json = JsonSerializer.Serialize(config);
             byte[] data = Encoding.UTF8.GetBytes(json);
 
@@ -67,13 +62,7 @@ namespace AESCryptoTool.Services
             
             if (!File.Exists(ConfigFile))
             {
-                return new AppConfig
-                {
-                    Key = defaultKey,
-                    IV = defaultIV,
-                    KeyBase64 = DefaultKeyBase64,
-                    IVBase64 = DefaultIVBase64
-                };
+                return CreateDefaultConfig();
             }
 
             try
@@ -89,34 +78,64 @@ namespace AESCryptoTool.Services
 
                 if (config == null)
                 {
-                    return new AppConfig
-                    {
-                        Key = defaultKey,
-                        IV = defaultIV,
-                        KeyBase64 = DefaultKeyBase64,
-                        IVBase64 = DefaultIVBase64
-                    };
+                    return CreateDefaultConfig();
                 }
 
-                // Ensure all values are set
-                if (string.IsNullOrEmpty(config.Key)) config.Key = defaultKey;
-                if (string.IsNullOrEmpty(config.IV)) config.IV = defaultIV;
-                if (string.IsNullOrEmpty(config.KeyBase64)) config.KeyBase64 = DefaultKeyBase64;
-                if (string.IsNullOrEmpty(config.IVBase64)) config.IVBase64 = DefaultIVBase64;
+                // Ensure Profiles exist (Migration Logic)
+                if (config.Profiles == null) config.Profiles = new List<KeyProfile>();
+
+                if (config.Profiles.Count == 0)
+                {
+                    // Migrate legacy values to new Default Profile
+                    var defaultProfile = new KeyProfile
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Default",
+                        Key = !string.IsNullOrEmpty(config.Key) ? config.Key : defaultKey,
+                        IV = !string.IsNullOrEmpty(config.IV) ? config.IV : defaultIV,
+                        KeyBase64 = !string.IsNullOrEmpty(config.KeyBase64) ? config.KeyBase64 : DefaultKeyBase64,
+                        IVBase64 = !string.IsNullOrEmpty(config.IVBase64) ? config.IVBase64 : DefaultIVBase64
+                    };
+
+                    config.Profiles.Add(defaultProfile);
+                    config.SelectedProfileId = defaultProfile.Id;
+                }
 
                 return config;
             }
             catch
             {
-                return new AppConfig
-                {
-                    Key = defaultKey,
-                    IV = defaultIV,
-                    KeyBase64 = DefaultKeyBase64,
-                    IVBase64 = DefaultIVBase64
-                };
+                return CreateDefaultConfig();
             }
         }
+
+        private static AppConfig CreateDefaultConfig()
+        {
+            var (defaultKey, defaultIV) = GetDefaultKeys();
+            var config = new AppConfig();
+            
+            var defaultProfile = new KeyProfile
+            {
+                Id = Guid.NewGuid(),
+                Name = "Default",
+                Key = defaultKey,
+                IV = defaultIV,
+                KeyBase64 = DefaultKeyBase64,
+                IVBase64 = DefaultIVBase64
+            };
+            
+            config.Profiles.Add(defaultProfile);
+            config.SelectedProfileId = defaultProfile.Id;
+
+            // Set legacy props for safety
+            config.Key = defaultKey;
+            config.IV = defaultIV;
+            config.KeyBase64 = DefaultKeyBase64;
+            config.IVBase64 = DefaultIVBase64;
+            
+            return config;
+        }
+
 
         /// <summary>
         /// Resets keys to default values
@@ -200,6 +219,35 @@ namespace AESCryptoTool.Services
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Generates random alphanumeric keys (Key: 32 chars, IV: 16 chars)
+        /// </summary>
+        public static (string Key, string IV) GenerateRandomKeys()
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            
+            string GenerateString(int length)
+            {
+                var stringChars = new char[length];
+                var randomBytes = new byte[length];
+                
+                using (var rng = System.Security.Cryptography.RandomNumberGenerator.Create())
+                {
+                    rng.GetBytes(randomBytes);
+                }
+
+                for (int i = 0; i < length; i++)
+                {
+                    // Use modulo to pick char (unbiased enough for this context)
+                    stringChars[i] = chars[randomBytes[i] % chars.Length];
+                }
+
+                return new string(stringChars);
+            }
+
+            return (GenerateString(32), GenerateString(16));
         }
 
         public static void SaveSettings(AppSettings settings)

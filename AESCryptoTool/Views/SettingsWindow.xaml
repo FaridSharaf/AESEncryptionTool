@@ -68,7 +68,11 @@
                     <Separator Margin="0,20,0,10"/>
                     <TextBlock Text="System Tray" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,10"/>
                     <CheckBox x:Name="MinimizeToTrayCheckBox" Content="Minimize to system tray" Margin="0,0,0,8"/>
-                    <CheckBox x:Name="CloseToTrayCheckBox" Content="Close to system tray (use right-click → Exit to quit)"/>
+                    <CheckBox x:Name="CloseToTrayCheckBox" Content="Close to system tray (use right-click → Exit to quit)" Margin="0,0,0,8"/>
+                    
+                    <Separator Margin="0,20,0,10"/>
+                    <TextBlock Text="Window" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,10"/>
+                    <CheckBox x:Name="AlwaysOnTopCheckBox" Content="📌 Always on Top"/>
                 </StackPanel>
             </ScrollViewer>
 

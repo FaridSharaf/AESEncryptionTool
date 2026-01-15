@@ -109,6 +109,32 @@ namespace AESCryptoTool.Tests
             ConfigManager.SaveSettings(loadedSettings);
         }
 
+        [Fact]
+        public void SaveSettings_PersistsUIPreferences()
+        {
+            // Arrange
+            var settings = ConfigManager.LoadSettings();
+            var originalAlwaysOnTop = settings.AlwaysOnTop;
+            var originalMinToTray = settings.MinimizeToTray;
+
+            // Toggle values
+            settings.AlwaysOnTop = !settings.AlwaysOnTop;
+            settings.MinimizeToTray = !settings.MinimizeToTray;
+
+            // Act
+            ConfigManager.SaveSettings(settings);
+            var loadedSettings = ConfigManager.LoadSettings();
+
+            // Assert
+            Assert.Equal(settings.AlwaysOnTop, loadedSettings.AlwaysOnTop);
+            Assert.Equal(settings.MinimizeToTray, loadedSettings.MinimizeToTray);
+
+            // Cleanup
+            settings.AlwaysOnTop = originalAlwaysOnTop;
+            settings.MinimizeToTray = originalMinToTray;
+            ConfigManager.SaveSettings(settings);
+        }
+
         #endregion
 
         #region Base64 Validation Tests

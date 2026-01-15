@@ -5,21 +5,25 @@
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         ShowInTaskbar="False"
-        Style="{StaticResource ThemedWindow}">
+        Style="{StaticResource ThemedDialogWindow}">
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,25">
-            <TextBlock x:Name="IconText" Text="ℹ️" FontSize="32" VerticalAlignment="Top" Margin="0,0,20,0" FontFamily="Segoe UI Emoji"/>
-            <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="300" MaxWidth="320">
+        <Grid Grid.Row="0" Margin="0,0,0,25">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="IconText" Grid.Column="0" Text="ℹ️" FontSize="32" VerticalAlignment="Top" Margin="0,0,20,0" FontFamily="Segoe UI Emoji"/>
+            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" MaxHeight="300">
                 <TextBlock x:Name="MessageText" Text="Message content..." TextWrapping="Wrap" 
                            VerticalAlignment="Top" FontSize="14" Foreground="{DynamicResource TextPrimary}"
-                           MaxWidth="310" LineHeight="20"/>
+                           LineHeight="20"/>
             </ScrollViewer>
-        </StackPanel>
+        </Grid>
 
         <StackPanel x:Name="ButtonPanel" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button x:Name="YesButton" Content="Yes" Click="YesButton_Click" Visibility="Collapsed" 

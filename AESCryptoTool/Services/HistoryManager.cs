@@ -6,12 +6,20 @@ namespace AESCryptoTool.Services
 {
     public class HistoryManager
     {
-        private static readonly string DataDirectory = Path.Combine(
+        private static string _dataDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "AESEncryptionTool");
 
-        private static readonly string HistoryFile = Path.Combine(DataDirectory, "history.json");
-        private static readonly string BookmarksFile = Path.Combine(DataDirectory, "bookmarks.json");
+        // Allow tests to override the directory
+        public static void SetDataDirectory(string path)
+        {
+            _dataDirectory = path;
+            _historyEntries = null; // Reset cache
+            _bookmarkEntries = null;
+        }
+
+        private static string HistoryFile => Path.Combine(_dataDirectory, "history.json");
+        private static string BookmarksFile => Path.Combine(_dataDirectory, "bookmarks.json");
 
         private static List<HistoryEntry>? _historyEntries;
         private static List<HistoryEntry>? _bookmarkEntries;
@@ -201,6 +209,44 @@ namespace AESCryptoTool.Services
                 historyItem.IsFavorite = false;
                 SaveHistory();
             }
+        }
+
+        /// <summary>
+        /// Deletes multiple entries from history
+        /// </summary>
+        public static void DeleteHistoryEntries(IEnumerable<string> ids)
+        {
+            if (_historyEntries == null) _historyEntries = LoadHistory();
+            
+            var idSet = new HashSet<string>(ids);
+            _historyEntries.RemoveAll(e => idSet.Contains(e.Id));
+            SaveHistory();
+        }
+
+        /// <summary>
+        /// Deletes multiple entries from bookmarks
+        /// </summary>
+        public static void DeleteBookmarkEntries(IEnumerable<string> ids)
+        {
+            if (_historyEntries == null) _historyEntries = LoadHistory();
+            if (_bookmarkEntries == null) _bookmarkEntries = LoadBookmarks();
+
+            var idSet = new HashSet<string>(ids);
+            
+            // Remove from bookmarks
+            _bookmarkEntries.RemoveAll(e => idSet.Contains(e.Id));
+            SaveBookmarks();
+
+            // Update history entries to remove favorite status
+            foreach (var id in idSet)
+            {
+                var historyItem = _historyEntries.FirstOrDefault(e => e.Id == id);
+                if (historyItem != null)
+                {
+                    historyItem.IsFavorite = false;
+                }
+            }
+            SaveHistory();
         }
 
         /// <summary>
@@ -397,9 +443,9 @@ namespace AESCryptoTool.Services
                 var data = new HistoryData { Entries = entries };
                 string json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
 
-                if (!Directory.Exists(DataDirectory))
+                if (!Directory.Exists(_dataDirectory))
                 {
-                    Directory.CreateDirectory(DataDirectory);
+                    Directory.CreateDirectory(_dataDirectory);
                 }
 
                 File.WriteAllText(filePath, json);

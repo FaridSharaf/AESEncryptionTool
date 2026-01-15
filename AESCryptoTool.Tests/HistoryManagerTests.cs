@@ -4,8 +4,27 @@ using Xunit;
 
 namespace AESCryptoTool.Tests
 {
-    public class HistoryManagerTests
+    public class HistoryManagerTests : IDisposable
     {
+        private readonly string _tempDirectory;
+
+        public HistoryManagerTests()
+        {
+            // Set up a temporary directory for tests
+            _tempDirectory = Path.Combine(Path.GetTempPath(), "AESCryptoToolTest_" + Guid.NewGuid());
+            Directory.CreateDirectory(_tempDirectory);
+            HistoryManager.SetDataDirectory(_tempDirectory);
+        }
+
+        public void Dispose()
+        {
+            // Clean up
+            if (Directory.Exists(_tempDirectory))
+            {
+                try { Directory.Delete(_tempDirectory, true); } catch { }
+            }
+        }
+
         #region Add Entry Tests
 
         [Fact]

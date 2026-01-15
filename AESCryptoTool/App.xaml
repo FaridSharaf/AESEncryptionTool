@@ -71,6 +71,12 @@
                                     <!-- Caption Buttons -->
                                     <StackPanel Grid.Column="2" Orientation="Horizontal" 
                                                 WindowChrome.IsHitTestVisibleInChrome="True">
+                                        <!-- Pin/Unpin -->
+                                        <Button x:Name="PinButton" Width="46" Height="40" 
+                                                BorderThickness="0" Background="Transparent"
+                                                Foreground="{DynamicResource TextPrimary}"
+                                                FontFamily="Segoe UI Emoji" FontSize="14"
+                                                Content="📌" ToolTip="Always on Top"/>
                                         <!-- Minimize -->
                                         <Button x:Name="MinimizeButton" Width="46" Height="40" 
                                                 BorderThickness="0" Background="Transparent"
@@ -87,6 +93,64 @@
                                                 Content="&#xE922;" ToolTip="Maximize"
                                                 Command="{x:Static SystemCommands.MaximizeWindowCommand}"
                                                 CommandParameter="{Binding RelativeSource={RelativeSource TemplatedParent}}"/>
+                                        <!-- Close -->
+                                        <Button x:Name="CloseButton" Width="46" Height="40"
+                                                BorderThickness="0" Background="Transparent"
+                                                Foreground="{DynamicResource TextPrimary}"
+                                                FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                                Content="&#xE8BB;" ToolTip="Close"
+                                                Command="{x:Static SystemCommands.CloseWindowCommand}"
+                                                CommandParameter="{Binding RelativeSource={RelativeSource TemplatedParent}}"/>
+                                    </StackPanel>
+                                </Grid>
+                                
+                                <!-- Content -->
+                                <AdornerDecorator Grid.Row="1">
+                                    <ContentPresenter/>
+                                </AdornerDecorator>
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Themed Dialog Window Style (No Pin/Min/Max) -->
+        <Style x:Key="ThemedDialogWindow" TargetType="{x:Type Window}" BasedOn="{StaticResource ThemedWindow}">
+            <Setter Property="ResizeMode" Value="NoResize"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Window}">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="40"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                
+                                <!-- Title Bar -->
+                                <Grid Grid.Row="0" Background="{DynamicResource SecondaryBg}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <!-- Icon -->
+                                    <Image Grid.Column="0" Source="{TemplateBinding Icon}" 
+                                           Width="20" Height="20" Margin="15,0,10,0"
+                                           VerticalAlignment="Center"
+                                           RenderOptions.BitmapScalingMode="HighQuality"/>
+                                           
+                                    <!-- Title -->
+                                    <TextBlock Grid.Column="1" Text="{TemplateBinding Title}" 
+                                               VerticalAlignment="Center" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimary}"
+                                               TextTrimming="CharacterEllipsis"/>
+                                    
+                                    <!-- Caption Buttons (Close Only) -->
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" 
+                                                WindowChrome.IsHitTestVisibleInChrome="True">
                                         <!-- Close -->
                                         <Button x:Name="CloseButton" Width="46" Height="40"
                                                 BorderThickness="0" Background="Transparent"

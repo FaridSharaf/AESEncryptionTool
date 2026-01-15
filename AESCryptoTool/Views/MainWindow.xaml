@@ -125,13 +125,34 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,10,10">
+                        <!-- Profile Selector -->
+                        <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,0,0,15">
+                            <TextBlock Text="Profile:" VerticalAlignment="Center" Margin="0,0,10,0" 
+                                       Foreground="{DynamicResource TextSecondary}"/>
+                            <ComboBox x:Name="ProfileComboBox" Width="200" Margin="0,0,10,0"
+                                      DisplayMemberPath="Name" SelectedValuePath="Id"
+                                      SelectionChanged="ProfileComboBox_SelectionChanged"/>
+                            
+                            <Button x:Name="AddProfileButton" Content="➕ New" 
+                                    Style="{StaticResource SecondaryButton}" 
+                                    Padding="10,5" Margin="0,0,5,0"
+                                    Click="AddProfileButton_Click" ToolTip="Create new profile"/>
+                            
+                            <Button x:Name="DeleteProfileButton" Content="🗑️" 
+                                    Style="{StaticResource SecondaryButton}" 
+                                    Padding="10,5" 
+                                    Click="DeleteProfileButton_Click" ToolTip="Delete current profile"/>
+                        </StackPanel>
+
+
+                        <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,10,10">
                             <Label Content="Key (16/24/32 chars):"/>
                             <Grid>
                                 <TextBox x:Name="KeyTextBox" Style="{StaticResource InputTextBox}"
@@ -143,7 +164,7 @@
                             </Grid>
                         </StackPanel>
 
-                        <StackPanel Grid.Row="0" Grid.Column="1" Margin="10,0,0,10">
+                        <StackPanel Grid.Row="1" Grid.Column="1" Margin="10,0,0,10">
                             <Label Content="IV (16 chars):"/>
                             <Grid>
                                 <TextBox x:Name="IVTextBox" Style="{StaticResource InputTextBox}"
@@ -155,7 +176,7 @@
                             </Grid>
                         </StackPanel>
 
-                        <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
                             <Button Content="🔄 Reset" Style="{StaticResource SecondaryButton}"
                                 Click="ResetKeysButton_Click" Margin="0,0,5,0"
                                 ToolTip="Reset to default keys"/>
@@ -573,7 +594,7 @@
                                            VerticalAlignment="Center"/>
                             </Grid>
 
-                            <Button Grid.Column="2" Content="🧹 Clear History" Style="{StaticResource SecondaryButton}"
+                            <Button x:Name="ClearHistoryButton" Grid.Column="2" Content="🧹 Clear History" Style="{StaticResource SecondaryButton}"
                                     Click="ClearHistoryButton_Click" ToolTip="Delete all history entries (bookmarks preserved)"
                                     Foreground="{DynamicResource AccentRed}"/>
                         </Grid>
@@ -659,6 +680,23 @@
                                 </Style>
                             </DataGrid.CellStyle>
                             <DataGrid.Columns>
+                                <DataGridTemplateColumn Width="40" CanUserResize="False">
+                                    <DataGridTemplateColumn.HeaderTemplate>
+                                        <DataTemplate>
+                                            <CheckBox x:Name="HistorySelectAllCheckBox" 
+                                                      Checked="HistorySelectAll_Checked" 
+                                                      Unchecked="HistorySelectAll_Unchecked"
+                                                      ToolTip="Select All"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.HeaderTemplate>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <CheckBox IsChecked="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" 
+                                                      Click="HistoryItemCheckBox_Click"
+                                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                                 <DataGridTextColumn Header="Time" Binding="{Binding Timestamp, StringFormat=\{0:MM/dd HH:mm\}}" 
                                             Width="90" IsReadOnly="True"/>
                                 <DataGridTextColumn Header="Op" Binding="{Binding Operation}" Width="70" IsReadOnly="True"/>
@@ -771,7 +809,7 @@
                                            VerticalAlignment="Center"/>
                             </Grid>
 
-                            <Button Grid.Column="2" Content="🧹 Clear Bookmarks" Style="{StaticResource SecondaryButton}"
+                            <Button x:Name="ClearBookmarksButton" Grid.Column="2" Content="🧹 Clear Bookmarks" Style="{StaticResource SecondaryButton}"
                                     Click="ClearBookmarksButton_Click" ToolTip="Remove all bookmarks"
                                     Foreground="{DynamicResource AccentRed}"/>
                         </Grid>

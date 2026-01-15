@@ -18,6 +18,10 @@ namespace AESCryptoTool.Models
         // System Tray Settings
         public bool MinimizeToTray { get; set; } = false;
         public bool CloseToTray { get; set; } = false;
+        public bool HasShownTrayNotification { get; set; } = false;
+        
+        // Window Settings
+        public bool AlwaysOnTop { get; set; } = false;
     }
 }
 

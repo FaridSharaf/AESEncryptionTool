@@ -49,7 +49,8 @@ namespace AESCryptoTool.Views
                 WindowTop = currentSettings.WindowTop,
                 IsMaximized = currentSettings.IsMaximized,
                 MinimizeToTray = currentSettings.MinimizeToTray,
-                CloseToTray = currentSettings.CloseToTray
+                CloseToTray = currentSettings.CloseToTray,
+                AlwaysOnTop = currentSettings.AlwaysOnTop
             };
 
             AutoCopyCheckBox.IsChecked = Settings.AutoCopy;
@@ -59,6 +60,7 @@ namespace AESCryptoTool.Views
             MaxBookmarkItemsTextBox.Text = Settings.MaxBookmarkItems.ToString();
             MinimizeToTrayCheckBox.IsChecked = Settings.MinimizeToTray;
             CloseToTrayCheckBox.IsChecked = Settings.CloseToTray;
+            AlwaysOnTopCheckBox.IsChecked = Settings.AlwaysOnTop;
             
             // Populate Theme ComboBox
             ThemeComboBox.Items.Clear();
@@ -226,6 +228,9 @@ namespace AESCryptoTool.Views
             // System Tray settings
             Settings.MinimizeToTray = MinimizeToTrayCheckBox.IsChecked == true;
             Settings.CloseToTray = CloseToTrayCheckBox.IsChecked == true;
+            Settings.AlwaysOnTop = AlwaysOnTopCheckBox.IsChecked == true;
+
+            // Update minimize button tooltip if setting changed
 
             DialogResult = true;
             Close();

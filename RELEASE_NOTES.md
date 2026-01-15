@@ -1,5 +1,29 @@
 # Release Notes
 
+## Version 2.2.0 (Latest)
+
+**Key Management & Batch Operations**
+
+### 🔐 Multi-Profile Key Management
+
+- **Key Profiles**: Create and switch between multiple encryption profiles (e.g., "Production", "Test", "Client A").
+- **Seamless Switching**: Instantly change active keys without re-entering them.
+- **Migration**: Existing legacy keys are automatically migrated to a "Default" profile.
+
+### 🗑️ Batch Delete
+
+- **Multi-Selection**: Use checkboxes to select multiple history or bookmark items.
+- **Select All**: One-click selection for all visible items.
+- **Dynamic Delete**: Button updates to show "Delete Selected (N)" or "Clear All" based on selection.
+
+### 🛠 Improvements
+
+- **Tray Notification**: Suppressed "Running in Tray" balloon tip (shows only once).
+- **Dialogs**: Fixed text wrapping issues in confirmation dialogs.
+- **UI Polish**: Cleaned up Profile Dialog and Message Boxes (removed unnecessary window controls).
+
+---
+
 ## Version 2.1.0 (Latest)
 
 **Performance & Modernization Update**

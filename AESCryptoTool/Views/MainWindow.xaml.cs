@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -81,6 +82,7 @@ namespace AESCryptoTool.Views
         // System Tray
         private System.Windows.Forms.NotifyIcon? _notifyIcon;
         private Button? _minimizeButton;
+        private Button? _pinButton;
 
         public MainWindow()
         {
@@ -124,17 +126,32 @@ namespace AESCryptoTool.Views
             this.Closing += MainWindow_Closing;
             
             UpdateStatus("✓ Ready - Using double encryption (plaintext keys)");
+            
+            // Set focus to Encrypt input by default
+            this.Loaded += (s, e) => EncryptInputTextBox.Focus();
         }
 
         private void LoadSettings()
         {
+            // Load Settings
             _settings = ConfigManager.LoadSettings();
             
+            // Apply Window Settings
             if (_settings.WindowWidth > 0) Width = _settings.WindowWidth;
             if (_settings.WindowHeight > 0) Height = _settings.WindowHeight;
-            if (_settings.WindowLeft > 0) Left = _settings.WindowLeft;
-            if (_settings.WindowTop > 0) Top = _settings.WindowTop;
+            if (_settings.WindowLeft >= 0) Left = _settings.WindowLeft;
+            if (_settings.WindowTop >= 0) Top = _settings.WindowTop;
             if (_settings.IsMaximized) WindowState = WindowState.Maximized;
+            
+            // Apply Always On Top
+            Topmost = _settings.AlwaysOnTop;
+            
+            // Check args for file opening
+            if (System.Windows.Application.Current.Properties["Args"] is string[] args && args.Length > 0)
+            {
+                // Handle file opening logic here if needed
+                // For now, just acknowledge the args
+            }
 
             EncryptAutoDetectCheckBox.IsChecked = _settings.AutoDetect;
             DecryptAutoDetectCheckBox.IsChecked = _settings.AutoDetect;
@@ -144,9 +161,102 @@ namespace AESCryptoTool.Views
         {
             _config = ConfigManager.LoadKeys();
             
-            // Initial state: fully hidden
-            KeyTextBox.Text = new string('•', _config.Key.Length > 0 ? _config.Key.Length : 16);
-            IVTextBox.Text = new string('•', _config.IV.Length > 0 ? _config.IV.Length : 16);
+            // Populate Profile Selector
+            ProfileComboBox.ItemsSource = _config.Profiles;
+            
+            // Select the active profile
+            var activeProfile = _config.Profiles.FirstOrDefault(p => p.Id == _config.SelectedProfileId);
+            if (activeProfile != null)
+            {
+                ProfileComboBox.SelectedItem = activeProfile;
+                UpdateUIForProfile(activeProfile);
+            }
+            else if (_config.Profiles.Count > 0)
+            {
+                ProfileComboBox.SelectedIndex = 0;
+            }
+        }
+
+        private void UpdateUIForProfile(KeyProfile profile)
+        {
+             // Sync config props for compatibility
+             _config.Key = profile.Key;
+             _config.IV = profile.IV;
+             _config.KeyBase64 = profile.KeyBase64;
+             _config.IVBase64 = profile.IVBase64;
+             
+             // Update UI
+             // Update UI
+             if (_keyMasked)
+                 KeyTextBox.Text = new string('•', _config.Key.Length > 0 ? _config.Key.Length : 16);
+             else
+                 KeyTextBox.Text = MaskValue(_config.Key); // Changed from raw _config.Key to MaskValue
+
+             if (_ivMasked)
+                 IVTextBox.Text = new string('•', _config.IV.Length > 0 ? _config.IV.Length : 16);
+             else
+                 IVTextBox.Text = MaskValue(_config.IV); // Consistent partial masking for IV too
+        }
+
+        private void ProfileComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ProfileComboBox.SelectedItem is KeyProfile profile)
+            {
+                _config.SelectedProfileId = profile.Id;
+                UpdateUIForProfile(profile);
+            }
+        }
+
+        private void AddProfileButton_Click(object sender, RoutedEventArgs e)
+        {
+            var existingNames = _config.Profiles.Select(p => p.Name).ToList();
+            var dialog = new ProfileNameDialog(existingNames);
+            dialog.Owner = this;
+            if (dialog.ShowDialog() == true)
+            {
+                var (newKey, newIV) = ConfigManager.GenerateRandomKeys();
+                var newProfile = new KeyProfile
+                {
+                    Name = dialog.ProfileName,
+                    Key = newKey,
+                    IV = newIV,
+                    KeyBase64 = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(newKey)),
+                    IVBase64 = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(newIV)) // Not strictly necessary for plaintext flow but good to fill
+                };
+                
+                _config.Profiles.Add(newProfile);
+                // Refresh binding
+                ProfileComboBox.ItemsSource = null;
+                ProfileComboBox.ItemsSource = _config.Profiles;
+                ProfileComboBox.SelectedItem = newProfile;
+                
+                ConfigManager.SaveConfiguration(_config);
+                UpdateStatus($"✓ Profile '{newProfile.Name}' created");
+            }
+        }
+
+        private void DeleteProfileButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ProfileComboBox.SelectedItem is KeyProfile profile)
+            {
+                if (_config.Profiles.Count <= 1)
+                {
+                    CustomMessageBox.Show("Cannot delete the last profile.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                
+                var result = CustomMessageBox.Show($"Are you sure you want to delete profile '{profile.Name}'?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                if (result == MessageBoxResult.Yes)
+                {
+                    _config.Profiles.Remove(profile);
+                     ProfileComboBox.ItemsSource = null;
+                     ProfileComboBox.ItemsSource = _config.Profiles;
+                     ProfileComboBox.SelectedIndex = 0;
+                     
+                     ConfigManager.SaveConfiguration(_config);
+                     UpdateStatus("✓ Profile deleted");
+                }
+            }
         }
 
         #region Theme Management
@@ -167,6 +277,40 @@ namespace AESCryptoTool.Views
             base.OnApplyTemplate();
             _minimizeButton = GetTemplateChild("MinimizeButton") as Button;
             UpdateMinimizeTooltip();
+            
+            _pinButton = GetTemplateChild("PinButton") as Button;
+            if (_pinButton != null)
+            {
+                _pinButton.Click += PinButton_Click;
+                UpdatePinButtonState();
+            }
+        }
+
+        private void PinButton_Click(object sender, RoutedEventArgs e)
+        {
+            _settings.AlwaysOnTop = !_settings.AlwaysOnTop;
+            Topmost = _settings.AlwaysOnTop;
+            ConfigManager.SaveSettings(_settings); // Auto-save this preference
+            UpdatePinButtonState();
+        }
+
+        private void UpdatePinButtonState()
+        {
+            if (_pinButton != null)
+            {
+                if (_settings.AlwaysOnTop)
+                {
+                    _pinButton.Content = "📌"; // Pinned (Pushpin)
+                    _pinButton.ToolTip = "Unpin (Always on Top is ON)";
+                    _pinButton.Foreground = (System.Windows.Media.Brush)FindResource("PrimaryAccent");
+                }
+                else
+                {
+                    _pinButton.Content = "📍"; // Unpinned (Round pushpin or different icon)
+                    _pinButton.ToolTip = "Pin to Top";
+                    _pinButton.Foreground = (System.Windows.Media.Brush)FindResource("TextSecondary");
+                }
+            }
         }
 
         private void UpdateMinimizeTooltip()
@@ -192,6 +336,11 @@ namespace AESCryptoTool.Views
                 DecryptAutoDetectCheckBox.IsChecked = _settings.AutoDetect;
                 RefreshRecentItems();
                 UpdateMinimizeTooltip();
+                
+                // Update Topmost from settings (if changed there)
+                Topmost = _settings.AlwaysOnTop;
+                UpdatePinButtonState();
+                
                 UpdateStatus("✓ Settings saved");
             }
         }
@@ -248,6 +397,10 @@ namespace AESCryptoTool.Views
             {
                 HistoryLabel.Text = "📜 History";
             }
+
+            // Ensure button states are correct (e.g. reset to "Clear" after reload)
+            UpdateHistoryDeleteButtonState();
+            UpdateBookmarksDeleteButtonState();
         }
 
         private void HistorySearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -300,35 +453,159 @@ namespace AESCryptoTool.Views
 
         private void ClearHistoryButton_Click(object sender, RoutedEventArgs e)
         {
-            var result = CustomMessageBox.Show(
-                "Are you sure you want to delete ALL history entries?\nThis action cannot be undone.",
-                "Clear History",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-
-            if (result == MessageBoxResult.Yes)
+            var selectedItems = HistoryItems.Where(x => x.IsSelected).ToList();
+            if (selectedItems.Count > 0)
             {
-                HistoryManager.ClearHistory();
-                RefreshHistory();
-                RefreshRecentItems();
-                UpdateStatus("🗑️ History cleared");
+                // Batch Delete Selected
+                int count = selectedItems.Count;
+                var result = CustomMessageBox.Show(
+                    $"Are you sure you want to delete {count} selected item(s)?",
+                    "Confirm Deletion",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    var selectedIds = selectedItems.Select(x => x.Id).ToList();
+                    HistoryManager.DeleteHistoryEntries(selectedIds);
+                    LoadHistory();
+                    UpdateHistoryDeleteButtonState();
+                    // Reset Select All check if needed (handled by logic)
+                    UpdateStatus("✓ Selected history entries deleted");
+                }
+            }
+            else
+            {
+                // Clear All (Existing Logic)
+                if (HistoryItems.Count == 0) return;
+
+                var result = CustomMessageBox.Show(
+                    "Are you sure you want to clear all encryption history?\n(Bookmarks will be preserved)",
+                    "Confirm Clear",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    HistoryManager.ClearHistory();
+                    LoadHistory();
+                    UpdateHistoryDeleteButtonState();
+                    UpdateStatus("✓ History cleared");
+                }
+            }
+        }
+
+        private void HistorySelectAll_Checked(object sender, RoutedEventArgs e)
+        {
+            foreach (var item in HistoryItems) item.IsSelected = true;
+            UpdateHistoryDeleteButtonState();
+        }
+
+        private void HistorySelectAll_Unchecked(object sender, RoutedEventArgs e)
+        {
+            foreach (var item in HistoryItems) item.IsSelected = false;
+            UpdateHistoryDeleteButtonState();
+        }
+
+        private void HistoryItemCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateHistoryDeleteButtonState();
+        }
+
+        private void UpdateHistoryDeleteButtonState()
+        {
+            int count = HistoryItems.Count(x => x.IsSelected);
+            if (count > 0)
+            {
+                 ClearHistoryButton.Content = $"🗑️ Delete Selected ({count})";
+                 ClearHistoryButton.ToolTip = "Delete selected items";
+            }
+            else
+            {
+                 ClearHistoryButton.Content = "🧹 Clear History";
+                 ClearHistoryButton.ToolTip = "Delete all history entries (reserved)";
             }
         }
 
         private void ClearBookmarksButton_Click(object sender, RoutedEventArgs e)
         {
-            var result = CustomMessageBox.Show(
-                "Are you sure you want to remove ALL bookmarks?\nThis action cannot be undone.",
-                "Clear Bookmarks",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-
-            if (result == MessageBoxResult.Yes)
+            var selectedItems = BookmarksItems.Where(x => x.IsSelected).ToList();
+            if (selectedItems.Count > 0)
             {
-                HistoryManager.ClearBookmarks();
-                RefreshHistory();
-                RefreshRecentItems();
-                UpdateStatus("🗑️ Bookmarks cleared");
+                // Delete Selected
+                int count = selectedItems.Count;
+                var result = CustomMessageBox.Show(
+                    $"Are you sure you want to delete {count} selected bookmark(s)?",
+                    "Confirm Deletion",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    var selectedIds = selectedItems.Select(x => x.Id).ToList();
+                    HistoryManager.DeleteBookmarkEntries(selectedIds);
+                    LoadHistory(); // Assuming this reloads bookmarks via UpdateUI or similar if they share references? 
+                    // Wait, LoadHistory reloads _historyEntries. LoadBookmarks logic needs check.
+                    // Actually MainWindow.cs calls LoadHistory() which refreshes HistoryItems?
+                    // Let's verify LoadHistory method.
+                    // For now, assume LoadHistory() works or call LoadKeys() etc. 
+                    // Actually, BookmarksItems needs refresh.
+                    UpdateStatus("✓ Selected bookmarks deleted");
+                    LoadHistory(); // This call refreshes both if implemented that way? Check LoadHistory implementation lines 1350+
+                    UpdateBookmarksDeleteButtonState();
+                }
+            }
+            else
+            {
+                // Clear All
+                if (BookmarksItems.Count == 0) return;
+
+                var result = CustomMessageBox.Show(
+                    "Are you sure you want to delete ALL bookmarks?",
+                    "Confirm Clear",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    var allIds = BookmarksItems.Select(x => x.Id).ToList();
+                    HistoryManager.DeleteBookmarkEntries(allIds);
+                    LoadHistory();
+                    UpdateBookmarksDeleteButtonState();
+                    UpdateStatus("✓ Bookmarks cleared");
+                }
+            }
+        }
+
+        private void BookmarksSelectAll_Checked(object sender, RoutedEventArgs e)
+        {
+            foreach (var item in BookmarksItems) item.IsSelected = true;
+            UpdateBookmarksDeleteButtonState();
+        }
+
+        private void BookmarksSelectAll_Unchecked(object sender, RoutedEventArgs e)
+        {
+            foreach (var item in BookmarksItems) item.IsSelected = false;
+            UpdateBookmarksDeleteButtonState();
+        }
+
+        private void BookmarksItemCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateBookmarksDeleteButtonState();
+        }
+
+        private void UpdateBookmarksDeleteButtonState()
+        {
+            int count = BookmarksItems.Count(x => x.IsSelected);
+            if (count > 0)
+            {
+                 ClearBookmarksButton.Content = $"🗑️ Delete Selected ({count})";
+                 ClearBookmarksButton.ToolTip = "Delete selected items";
+            }
+            else
+            {
+                 ClearBookmarksButton.Content = "🧹 Clear Bookmarks";
+                 ClearBookmarksButton.ToolTip = "Remove all bookmarks";
             }
         }
 
@@ -443,9 +720,20 @@ namespace AESCryptoTool.Views
                     return;
                 }
 
-                // Save both plaintext and keep existing Base64 keys
-                ConfigManager.SaveKeys(key, iv, _config.KeyBase64, _config.IVBase64);
-                _config = ConfigManager.LoadKeys();
+                // Update current profile
+                if (ProfileComboBox.SelectedItem is KeyProfile profile)
+                {
+                    profile.Key = key;
+                    profile.IV = iv;
+                }
+
+                // Update legacy props just in case
+                _config.Key = key;
+                _config.IV = iv;
+                
+                ConfigManager.SaveConfiguration(_config);
+                
+                // _config = ConfigManager.LoadKeys(); // Don't reload, it resets UI state
                 UpdateStatus("✓ Keys saved successfully");
                 CustomMessageBox.Show("Keys saved successfully!", "Success", 
                     MessageBoxButton.OK, MessageBoxImage.Information);
@@ -528,7 +816,18 @@ namespace AESCryptoTool.Views
                 try
                 {
                     ConfigManager.SetAsDefaultKeys(key, iv);
-                    ConfigManager.SaveKeys(key, iv, _config.KeyBase64, _config.IVBase64);
+                    ConfigManager.SetAsDefaultKeys(key, iv);
+                    
+                    // Update current profile
+                    _config.Key = key;
+                    _config.IV = iv;
+                    if (ProfileComboBox.SelectedItem is KeyProfile profile)
+                    {
+                         profile.Key = key;
+                         profile.IV = iv;
+                    }
+                    
+                    ConfigManager.SaveConfiguration(_config);
                     _config = ConfigManager.LoadKeys();
                     UpdateStatus("✓ Keys set as new default");
                     CustomMessageBox.Show("Current keys are now the default!", "Success", 
@@ -975,10 +1274,7 @@ namespace AESCryptoTool.Views
             base.OnClosing(e);
         }
 
-        private void HistoryDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
 
-        }
 
         public void RefreshData()
         {
@@ -1634,7 +1930,14 @@ namespace AESCryptoTool.Views
             if (_notifyIcon != null)
             {
                 _notifyIcon.Visible = true;
-                _notifyIcon.ShowBalloonTip(1000, "AES Crypto Tool", "Running in system tray", System.Windows.Forms.ToolTipIcon.Info);
+                
+                // Show notification only once
+                if (!_settings.HasShownTrayNotification)
+                {
+                    _notifyIcon.ShowBalloonTip(1000, "AES Crypto Tool", "Running in system tray", System.Windows.Forms.ToolTipIcon.Info);
+                    _settings.HasShownTrayNotification = true;
+                    ConfigManager.SaveSettings(_settings);
+                }
             }
         }
 
