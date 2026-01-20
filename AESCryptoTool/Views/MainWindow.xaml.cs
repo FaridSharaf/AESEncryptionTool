@@ -154,6 +154,8 @@ namespace AESCryptoTool.Views
 
             EncryptAutoDetectCheckBox.IsChecked = _settings.AutoDetect;
             DecryptAutoDetectCheckBox.IsChecked = _settings.AutoDetect;
+            
+            InitializeSettings();
         }
 
         private void LoadKeys()
@@ -337,27 +339,7 @@ namespace AESCryptoTool.Views
         
         #endregion
 
-        // Settings
-        private void SettingsButton_Click(object sender, RoutedEventArgs e)
-        {
-            var settingsWindow = new SettingsWindow(_settings, this);
-            settingsWindow.Owner = this;
-            if (settingsWindow.ShowDialog() == true)
-            {
-                _settings = settingsWindow.Settings;
-                ConfigManager.SaveSettings(_settings);
-                EncryptAutoDetectCheckBox.IsChecked = _settings.AutoDetect;
-                DecryptAutoDetectCheckBox.IsChecked = _settings.AutoDetect;
-                RefreshRecentItems();
-                UpdateMinimizeTooltip();
-                
-                // Update Topmost from settings (if changed there)
-                Topmost = _settings.AlwaysOnTop;
-                UpdatePinButtonState();
-                
-                UpdateStatus("✓ Settings saved");
-            }
-        }
+
 
         /// <summary>
         /// Masks a value showing only first 2 and last 4 characters
@@ -2049,6 +2031,253 @@ namespace AESCryptoTool.Views
                     case "Settings": SettingsSection.Visibility = Visibility.Visible; break;
                 }
             }
+        }
+
+        #endregion
+        #region Settings Tab Logic
+
+        private bool _isSettingsInitializing = true;
+
+        private void InitializeSettings()
+        {
+            _isSettingsInitializing = true;
+
+            // Behavior
+            if (AutoCopyCheckBox != null) AutoCopyCheckBox.IsChecked = _settings.AutoCopy;
+            if (AutoDetectCheckBox != null) AutoDetectCheckBox.IsChecked = _settings.AutoDetect;
+
+            // Appearance - Theme
+            if (SettingsThemeComboBox != null)
+            {
+                SettingsThemeComboBox.Items.Clear();
+                
+                // Light Themes
+                SettingsThemeComboBox.Items.Add(new ComboBoxItem 
+                { 
+                    Content = "── Light Themes ──", 
+                    IsEnabled = false, 
+                    Foreground = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#94A3B8")) 
+                });
+
+                foreach (var theme in ThemeManager.GetLightThemes())
+                {
+                    var item = new ComboBoxItem { Content = theme, Tag = theme };
+                    SettingsThemeComboBox.Items.Add(item);
+                    if (theme == _settings.Theme) SettingsThemeComboBox.SelectedItem = item;
+                }
+
+                // Dark Themes
+                SettingsThemeComboBox.Items.Add(new ComboBoxItem 
+                { 
+                    Content = "── Dark Themes ──", 
+                    IsEnabled = false, 
+                    Foreground = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#94A3B8")) 
+                });
+
+                foreach (var theme in ThemeManager.GetDarkThemes())
+                {
+                    var item = new ComboBoxItem { Content = theme, Tag = theme };
+                    SettingsThemeComboBox.Items.Add(item);
+                    if (theme == _settings.Theme) SettingsThemeComboBox.SelectedItem = item;
+                }
+                
+                if (SettingsThemeComboBox.SelectedItem == null) SettingsThemeComboBox.SelectedIndex = 1;
+            }
+
+            // Appearance - Font
+            if (SettingsFontComboBox != null)
+            {
+                foreach (ComboBoxItem item in SettingsFontComboBox.Items)
+                {
+                    if (item.Tag?.ToString() == _settings.FontFamily)
+                    {
+                        SettingsFontComboBox.SelectedItem = item;
+                        break;
+                    }
+                }
+                if (SettingsFontComboBox.SelectedItem == null) SettingsFontComboBox.SelectedIndex = 0;
+            }
+
+            if (SettingsRecentCountTextBox != null) SettingsRecentCountTextBox.Text = _settings.RecentItemsCount.ToString();
+
+            // Storage
+            if (SettingsMaxHistoryTextBox != null) SettingsMaxHistoryTextBox.Text = _settings.MaxHistoryItems.ToString();
+            if (SettingsMaxBookmarksTextBox != null) SettingsMaxBookmarksTextBox.Text = _settings.MaxBookmarkItems.ToString();
+
+            // System
+            if (MinimizeToTrayCheckBox != null) MinimizeToTrayCheckBox.IsChecked = _settings.MinimizeToTray;
+            if (CloseToTrayCheckBox != null) CloseToTrayCheckBox.IsChecked = _settings.CloseToTray;
+            if (AlwaysOnTopCheckBox != null) AlwaysOnTopCheckBox.IsChecked = _settings.AlwaysOnTop;
+
+            _isSettingsInitializing = false;
+        }
+
+        private void Setting_Changed(object sender, RoutedEventArgs e)
+        {
+            if (_isSettingsInitializing) return;
+            SaveSettings();
+            
+            // Sync specific settings if needed
+            if (sender == AutoDetectCheckBox)
+            {
+                EncryptAutoDetectCheckBox.IsChecked = AutoDetectCheckBox.IsChecked;
+                DecryptAutoDetectCheckBox.IsChecked = AutoDetectCheckBox.IsChecked;
+            }
+        }
+
+        private void SettingsTheme_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isSettingsInitializing) return;
+            if (SettingsThemeComboBox.SelectedItem is ComboBoxItem item && item.Tag is string themeName)
+            {
+                _settings.Theme = themeName;
+                ApplyTheme(themeName);
+                SaveSettings();
+            }
+        }
+
+        private void SettingsFont_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isSettingsInitializing) return;
+            if (SettingsFontComboBox.SelectedItem is ComboBoxItem item && item.Tag is string fontName)
+            {
+                _settings.FontFamily = fontName;
+                Services.ThemeManager.ApplyFont(fontName);
+                SaveSettings();
+            }
+        }
+
+        private void AlwaysOnTop_Changed(object sender, RoutedEventArgs e)
+        {
+             if (_isSettingsInitializing) return;
+             _settings.AlwaysOnTop = AlwaysOnTopCheckBox.IsChecked == true;
+             Topmost = _settings.AlwaysOnTop;
+             
+             // Sync title bar pin button if it exists and has visual state
+             // (PinButton click logic handles its own state, but we should keep them in sync if possible)
+             if (PinButton.Icon is Wpf.Ui.Controls.SymbolIcon icon)
+             {
+                 icon.Filled = _settings.AlwaysOnTop;
+             }
+             
+             SaveSettings();
+        }
+
+        // TextChanged Handlers
+        private void SettingsRecentCount_TextChanged(object sender, TextChangedEventArgs e)
+        {
+             if (_isSettingsInitializing) return;
+             if (int.TryParse(SettingsRecentCountTextBox.Text, out int val))
+             {
+                 if (val > 20) { val = 20; SettingsRecentCountTextBox.Text = "20"; SettingsRecentCountTextBox.CaretIndex = 2; }
+                 if (val > 0) 
+                 {
+                     _settings.RecentItemsCount = val;
+                     SaveSettings();
+                 }
+             }
+        }
+
+        private void SettingsMaxHistory_TextChanged(object sender, TextChangedEventArgs e)
+        {
+             if (_isSettingsInitializing) return;
+             
+             if (int.TryParse(SettingsMaxHistoryTextBox.Text, out int val))
+             {
+                 if (val > 1000) 
+                 { 
+                     val = 1000; 
+                     SettingsMaxHistoryTextBox.Text = "1000"; 
+                     SettingsMaxHistoryTextBox.CaretIndex = 4; 
+                 }
+                 
+                 if (val > 0)
+                 {
+                     _settings.MaxHistoryItems = val;
+                     SaveSettings(); 
+                 }
+             }
+        }
+
+        private void SettingsMaxBookmarks_TextChanged(object sender, TextChangedEventArgs e)
+        {
+             if (_isSettingsInitializing) return;
+             
+             if (int.TryParse(SettingsMaxBookmarksTextBox.Text, out int val))
+             {
+                 if (val > 1000) 
+                 { 
+                     val = 1000; 
+                     SettingsMaxBookmarksTextBox.Text = "1000"; 
+                     SettingsMaxBookmarksTextBox.CaretIndex = 4; 
+                 }
+
+                 if (val > 0)
+                 {
+                     _settings.MaxBookmarkItems = val;
+                     SaveSettings();
+                 }
+             }
+        }
+
+        private async void ExportDataButton_Click(object sender, RoutedEventArgs e)
+        {
+            try 
+            {
+                bool result = await Services.ImportExportService.ExportDataAsync(true, true);
+                if (result) UpdateStatus("✓ Data exported successfully");
+            }
+            catch (Exception ex)
+            {
+                UpdateStatus($"⚠ Export failed: {ex.Message}");
+            }
+        }
+
+        private async void ImportDataButton_Click(object sender, RoutedEventArgs e)
+        {
+             try 
+             {
+                 int count = await Services.ImportExportService.ImportDataAsync();
+                 if (count > 0)
+                 {
+                     UpdateStatus($"✓ Imported {count} items");
+                     RefreshHistory();
+                     if (this.BookmarksItems != null)
+                     {
+                        // Refresh bookmarks manually since ObservableCollection might need update
+                        BookmarksItems.Clear();
+                        foreach(var b in HistoryManager.GetFavorites()) BookmarksItems.Add(b);
+                     }
+                 }
+                 else if (count == 0)
+                 {
+                     UpdateStatus("Import cancelled or empty");
+                 }
+                 else 
+                 {
+                     UpdateStatus("⚠ No valid data found for import");
+                 }
+             }
+             catch (Exception ex)
+             {
+                 UpdateStatus($"⚠ Import failed: {ex.Message}");
+             }
+        }
+
+        private void SaveSettings()
+        {
+            _settings.AutoCopy = AutoCopyCheckBox.IsChecked == true;
+            _settings.AutoDetect = AutoDetectCheckBox.IsChecked == true;
+            _settings.MinimizeToTray = MinimizeToTrayCheckBox.IsChecked == true;
+            _settings.CloseToTray = CloseToTrayCheckBox.IsChecked == true;
+            
+             ConfigManager.SaveSettings(_settings);
+             
+             if (SettingsStatusText != null)
+             {
+                 SettingsStatusText.Text = "Saved ✓";
+                 // Could use a timer to clear it, but simple is fine for now
+             }
         }
 
         #endregion

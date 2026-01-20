@@ -91,6 +91,11 @@
             <!-- ============================================ -->
             <!-- NAVIGATION TOGGLE BUTTON STYLE -->
             <!-- ============================================ -->
+            <SolidColorBrush x:Key="PrimaryAccent" Color="#3B82F6" />
+
+            <!-- ============================================ -->
+            <!-- NAVIGATION TOGGLE BUTTON STYLE (Windows 11 Pill Design) -->
+            <!-- ============================================ -->
             <Style x:Key="ToggleButtonTheme" TargetType="{x:Type RadioButton}">
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
@@ -102,18 +107,26 @@
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type RadioButton}">
-                            <Border x:Name="border" Background="{TemplateBinding Background}" 
-                                    CornerRadius="6" Padding="{TemplateBinding Padding}">
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
+                            <Grid Background="Transparent">
+                                <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                        CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <!-- Pill Indicator -->
+                                <Border x:Name="Indicator" HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                                        Width="16" Height="3" CornerRadius="1.5" Margin="0,0,0,2"
+                                        Background="{DynamicResource PrimaryAccent}"
+                                        Visibility="Collapsed"/>
+                            </Grid>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource CardBg}"/>
+                                    <Setter TargetName="border" Property="Background" Value="#1AFFFFFF"/>
                                     <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
                                 </Trigger>
                                 <Trigger Property="IsChecked" Value="True">
-                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource CardBg}"/>
-                                    <Setter Property="Foreground" Value="{DynamicResource PrimaryAccent}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                                    <Setter TargetName="Indicator" Property="Visibility" Value="Visible"/>
+                                    <Setter TargetName="Indicator" Property="Width" Value="20"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>

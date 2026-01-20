@@ -73,8 +73,11 @@ Focus: Optimization, Modernization, and UI Polish.
 
 ---
 
-## ✅ Completed (V1 - V2.1)
+## ✅ Completed (V1 - V2.2)
 
+- [x] **Settings Tab Overhaul** (V2.2.2)
+- [x] **Navigation Redesign (Pills)** (V2.2.2)
+- [x] **Inline Key Config** (V2.2.2)
 - [x] **System Tray** (V2.1)
 - [x] **Scrollable UI Support** (V2.1)
 - [x] **Import/Export History** (V2.0)

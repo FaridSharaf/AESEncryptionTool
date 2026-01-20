@@ -1,6 +1,26 @@
 # Release Notes
 
-## Version 2.2.1 (Latest)
+# Release Notes
+
+## Version 2.2.2 (Latest)
+
+**UI/UX Redesign & Settings Overhaul**
+
+### 🎨 Design Updates
+
+- **Navigation**: Redesigned main navigation with modern **Windows 11-style "Pill" selection** indicators for a cleaner look.
+- **Settings Tab**: Replaced the separate pop-up key/settings window with a fully integrated **Inline Settings Tab**.
+- **Card Layout**: Grouped all settings into logical "Cards" (Behavior, Appearance, Storage, Data, System) for better readability.
+
+### ⚡ Functional Improvements
+
+- **Auto-Save**: Settings now save automatically as you toggle them, eliminating the need for a "Save" button.
+- **Improved Validation**: Restored smart validation for "Max History" and "Max Bookmarks" (auto-clamps to 1000).
+- **Cleanup**: Removed redundant "Settings" button from the status bar.
+
+---
+
+## Version 2.2.1
 
 **UI Polish & Bug Fixes**
 

@@ -1155,8 +1155,124 @@
             </Grid>
 
             <!-- Settings Section -->
+            <!-- Settings Section -->
             <Grid x:Name="SettingsSection" Visibility="Collapsed">
-                <TextBlock Text="Settings (Coming Soon)" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20,0,20,0">
+                    <StackPanel Margin="0,15,0,20">
+                        <TextBlock Text="Settings" FontSize="24" FontWeight="SemiBold" 
+                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,15"/>
+
+                        <!-- Behavior -->
+                        <TextBlock Text="Behavior" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,8"/>
+                        <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="15" Margin="0,0,0,20">
+                            <StackPanel>
+                                <CheckBox x:Name="AutoCopyCheckBox" Content="Auto-copy result to clipboard" Margin="0,0,0,8"
+                                          Checked="Setting_Changed" Unchecked="Setting_Changed"/>
+                                <CheckBox x:Name="AutoDetectCheckBox" Content="Auto-detect input type (encrypted/plaintext)"
+                                          Checked="Setting_Changed" Unchecked="Setting_Changed"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Appearance -->
+                        <TextBlock Text="Appearance" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,8"/>
+                        <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="15" Margin="0,0,0,20">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                    <Label Content="Theme:" Margin="0,0,0,5"/>
+                                    <ComboBox x:Name="SettingsThemeComboBox" HorizontalAlignment="Stretch" Margin="0,0,0,15"
+                                              SelectionChanged="SettingsTheme_SelectionChanged"/>
+                                    
+                                    <Label Content="Recent Items Count (Max 20):" Margin="0,0,0,5"/>
+                                    <TextBox x:Name="SettingsRecentCountTextBox" Style="{StaticResource InputTextBox}"
+                                             TextChanged="SettingsRecentCount_TextChanged"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                                    <Label Content="Font:" Margin="0,0,0,5"/>
+                                    <ComboBox x:Name="SettingsFontComboBox" HorizontalAlignment="Stretch" Margin="0,0,0,15"
+                                              SelectionChanged="SettingsFont_SelectionChanged">
+                                        <ComboBoxItem Content="Segoe UI" Tag="Segoe UI"/>
+                                        <ComboBoxItem Content="Inter" Tag="Inter"/>
+                                        <ComboBoxItem Content="Roboto" Tag="Roboto"/>
+                                        <ComboBoxItem Content="Open Sans" Tag="Open Sans"/>
+                                        <ComboBoxItem Content="Consolas" Tag="Consolas"/>
+                                        <ComboBoxItem Content="Cascadia Code" Tag="Cascadia Code"/>
+                                    </ComboBox>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Storage -->
+                        <TextBlock Text="Storage Limits" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,8"/>
+                        <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="15" Margin="0,0,0,20">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,0,0,15">
+                                    <ui:SymbolIcon Symbol="Warning24" FontSize="14" Margin="0,0,8,0" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="Items beyond these limits will be auto-deleted" 
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" FontSize="12" VerticalAlignment="Center"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,10,0">
+                                    <Label Content="Max History Records:" Margin="0,0,0,5"/>
+                                    <TextBox x:Name="SettingsMaxHistoryTextBox" Style="{StaticResource InputTextBox}"
+                                             TextChanged="SettingsMaxHistory_TextChanged"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="1" Grid.Column="1" Margin="10,0,0,0">
+                                    <Label Content="Max Bookmark Records:" Margin="0,0,0,5"/>
+                                    <TextBox x:Name="SettingsMaxBookmarksTextBox" Style="{StaticResource InputTextBox}"
+                                             TextChanged="SettingsMaxBookmarks_TextChanged"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Data Management -->
+                        <TextBlock Text="Data Management" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,8"/>
+                        <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="15" Margin="0,0,0,20">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:Button Content="Export Data" Appearance="Secondary" 
+                                        Click="ExportDataButton_Click" Margin="0,0,10,0" ToolTip="Backup History and Bookmarks">
+                                    <ui:Button.Icon>
+                                        <ui:SymbolIcon Symbol="Save24"/>
+                                    </ui:Button.Icon>
+                                </ui:Button>
+                                <ui:Button Content="Import Data" Appearance="Secondary" 
+                                        Click="ImportDataButton_Click" ToolTip="Restore History and Bookmarks">
+                                    <ui:Button.Icon>
+                                        <ui:SymbolIcon Symbol="FolderOpen24"/>
+                                    </ui:Button.Icon>
+                                </ui:Button>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- System & Window -->
+                        <TextBlock Text="System &amp; Window" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,8"/>
+                        <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="15" Margin="0,0,0,20">
+                            <StackPanel>
+                                <CheckBox x:Name="MinimizeToTrayCheckBox" Content="Minimize to system tray" Margin="0,0,0,8"
+                                          Checked="Setting_Changed" Unchecked="Setting_Changed"/>
+                                <CheckBox x:Name="CloseToTrayCheckBox" Content="Close to system tray" Margin="0,0,0,8"
+                                          Checked="Setting_Changed" Unchecked="Setting_Changed"/>
+                                <CheckBox x:Name="AlwaysOnTopCheckBox" Content="Always on Top"
+                                          Checked="AlwaysOnTop_Changed" Unchecked="AlwaysOnTop_Changed"/>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock x:Name="SettingsStatusText" Text="" Foreground="{DynamicResource AccentGreen}" 
+                                   HorizontalAlignment="Right" Margin="0,0,5,0" Height="20"/>
+                    </StackPanel>
+                </ScrollViewer>
             </Grid>
         </Grid>
             <!-- Operations Tab -->
@@ -1178,8 +1294,6 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock x:Name="StatusTextBlock" Text="✓ Ready" FontSize="13"
                            Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
-                <ui:Button Grid.Column="1" Content="⚙️ Settings" Appearance="Secondary"
-                    Click="SettingsButton_Click" VerticalAlignment="Center" Height="30" Padding="10,0" Margin="10,0,0,0"/>
             </Grid>
         </Border>
     </Grid>

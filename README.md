@@ -141,10 +141,14 @@ All data is stored in `%AppData%\AESEncryptionTool\`:
 
 ### Settings (⚙️)
 
+New in V2.2.2: Fully integrated **Settings Tab** with auto-save and card layout.
+
 - **Auto-copy**: Auto-copy results to clipboard
 - **Auto-detect**: Show hints for input type detection
-- **Recent items count**: Items in quick-access bar
-- **Max History/Bookmarks**: Storage limits (max 1000)
+- **Recent items count**: Items in quick-access bar (Max 20)
+- **Max History/Bookmarks**: Storage limits (clamps to 1000)
+- **Theme & Font**: Customize accent colors and font face
+- **System Tray**: Minimize/Close to tray options
 
 ## 🏗️ Project Structure
 
