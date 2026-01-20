@@ -413,6 +413,13 @@ namespace AESCryptoTool.Services
                 theme = Themes["Light Classic"];
 
             CurrentTheme = themeName;
+            
+            // Sync with WPF-UI Theme
+            var wpfTheme = theme.Category == "Dark" 
+                ? Wpf.Ui.Appearance.ApplicationTheme.Dark 
+                : Wpf.Ui.Appearance.ApplicationTheme.Light;
+            
+            Wpf.Ui.Appearance.ApplicationThemeManager.Apply(wpfTheme);
 
             var resources = Application.Current.Resources;
 

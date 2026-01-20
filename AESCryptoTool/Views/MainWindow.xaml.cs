@@ -60,7 +60,7 @@ namespace AESCryptoTool.Views
         }
     }
 
-    public partial class MainWindow : Window
+    public partial class MainWindow : Wpf.Ui.Controls.FluentWindow
     {
         private AppConfig _config = null!;
         private AppSettings _settings = null!;
@@ -284,6 +284,23 @@ namespace AESCryptoTool.Views
                 _pinButton.Click += PinButton_Click;
                 UpdatePinButtonState();
             }
+        }
+
+        private void HelpButton_Click(object sender, RoutedEventArgs e)
+        {
+            CustomMessageBox.Show(
+                "AES Encryption & Decryption Tool\n\n" +
+                "Version 2.2.0\n" +
+                "Created by Farid Ahmed\n\n" +
+                "Features:\n" +
+                "- AES-256 Encryption/Decryption\n" +
+                "- Multiple Key Profiles\n" +
+                "- Batch Processing\n" +
+                "- History & Bookmarks\n" +
+                "- Secure Data Import/Export",
+                "About AES Crypto Tool",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
         }
 
         private void PinButton_Click(object sender, RoutedEventArgs e)
@@ -1721,7 +1738,7 @@ namespace AESCryptoTool.Views
                     if (ext == ".xlsx" || ext == ".csv")
                     {
                         // Switch to Batch tab
-                        MainTabControl.SelectedIndex = 1; // Batch is the 2nd tab (index 1)
+                        NavBatch.IsChecked = true;
                         
                         // Load the file
                         _batchFilePath = files[0];
@@ -1960,6 +1977,30 @@ namespace AESCryptoTool.Views
                 _notifyIcon.Dispose();
             }
             System.Windows.Application.Current.Shutdown();
+        }
+
+
+        private void NavTab_Checked(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.RadioButton rb && rb.Tag is string tag)
+            {
+                if (OperationsSection == null) return;
+
+                OperationsSection.Visibility = Visibility.Collapsed;
+                BatchSection.Visibility = Visibility.Collapsed;
+                HistorySection.Visibility = Visibility.Collapsed;
+                BookmarksSection.Visibility = Visibility.Collapsed;
+                SettingsSection.Visibility = Visibility.Collapsed;
+
+                switch (tag)
+                {
+                    case "Operations": OperationsSection.Visibility = Visibility.Visible; break;
+                    case "Batch": BatchSection.Visibility = Visibility.Visible; break;
+                    case "History": HistorySection.Visibility = Visibility.Visible; break;
+                    case "Bookmarks": BookmarksSection.Visibility = Visibility.Visible; break;
+                    case "Settings": SettingsSection.Visibility = Visibility.Visible; break;
+                }
+            }
         }
 
         #endregion
