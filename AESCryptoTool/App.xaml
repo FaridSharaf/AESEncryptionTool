@@ -12,7 +12,8 @@
             </ResourceDictionary.MergedDictionaries>
 
             <!-- ============================================ -->
-            <!-- ACCENT COLORS (Fixed but visible in all themes) -->
+            <!-- SEMANTIC ACCENT COLORS (Fixed) -->
+            <!-- These provide semantic meaning for success/error/warning -->
             <!-- ============================================ -->
             <SolidColorBrush x:Key="AccentGreen" Color="#22C55E" />
             <SolidColorBrush x:Key="AccentRed" Color="#EF4444" />
@@ -22,17 +23,6 @@
             <SolidColorBrush x:Key="AccentYellow" Color="#EAB308" />
             <SolidColorBrush x:Key="AccentPink" Color="#EC4899" />
             <SolidColorBrush x:Key="AccentCyan" Color="#06B6D4" />
-
-            <!-- ============================================ -->
-            <!-- THEME COLORS (Managed by ThemeManager) -->
-            <!-- These are set programmatically by ThemeManager.ApplyTheme() -->
-            <!-- ============================================ -->
-            
-            <!-- Note: PrimaryAccent, TextPrimary, TextSecondary, TextMuted, -->
-            <!-- PrimaryBg, SecondaryBg, CardBg, RowBg, HeaderBg, BorderColor, -->
-            <!-- SelectionBg, TextOnAccent, AccentGreen, AccentRed, AccentBlue, etc. -->
-            <!-- are all defined by ThemeManager.cs at runtime -->
-
 
 
             <!-- ============================================ -->

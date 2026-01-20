@@ -21,9 +21,8 @@ namespace AESCryptoTool
 
             try
             {
-                // Initialize Theme
-                var savedTheme = ThemeManager.LoadSavedTheme();
-                ThemeManager.ApplyTheme(savedTheme);
+                // Apply system theme (will match Windows light/dark mode)
+                ThemeService.ApplySystemTheme();
 
                 // Log startup
                 Console.WriteLine("Application Started.");
