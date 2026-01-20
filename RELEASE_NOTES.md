@@ -1,6 +1,30 @@
 # Release Notes
 
-## Version 2.2.0 (Latest)
+## Version 2.2.1 (Latest)
+
+**UI Polish & Bug Fixes**
+
+### 🐛 Bug Fixes
+
+- **Tray Exit Crash**: Fixed crash when exiting via system tray "Exit" menu.
+- **Recent Items Limit**: Fixed recent items limit not respecting user settings.
+
+### 🛠 UI Improvements
+
+- **Key/IV Header**: Replaced emoji icon with proper Fluent UI icon.
+- **Recent Items**: Improved spacing and visual appearance (consistent button style).
+- **Icon Consistency**: Replaced legacy emojis with standard text symbols for better cross-platform compatibility.
+- **Dialog Modernization**: Updated NoteEditDialog and ProfileNameDialog to use WPF-UI components.
+- **Settings Validation**: Added real-time validation for Recent Items limit (max 20).
+
+### 🧹 Code Cleanup
+
+- Removed unused `_pinButton` field.
+- Improved null-safety in tray icon handling.
+
+---
+
+## Version 2.2.0
 
 **Key Management & Batch Operations**
 

@@ -14,14 +14,7 @@
     <ui:FluentWindow.Resources>
 
 
-        <!-- Button Style -->
-        <!-- Button Styles inherited from App.xaml -->
-        <Style x:Key="SmallButton" TargetType="{x:Type Button}" BasedOn="{StaticResource SecondaryButton}">
-            <Setter Property="Padding" Value="8,4"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Margin" Value="2"/>
-            <Setter Property="FontFamily" Value="Segoe UI Emoji"/>
-        </Style>
+
 
         <!-- TabItem Style -->
         <Style TargetType="{x:Type TabItem}">
@@ -64,31 +57,17 @@
         <!-- TextBox Style -->
         <!-- TextBox and Label Styles inherited from App.xaml -->
 
-        <!-- Star Button Style -->
-        <Style x:Key="StarButton" TargetType="{x:Type Button}">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="FontSize" Value="16"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="FontFamily" Value="Segoe UI Emoji"/>
-            <Setter Property="Padding" Value="4"/>
-            <Setter Property="Foreground" Value="{DynamicResource AccentYellow}"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type Button}">
-                        <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
-                                              TextElement.FontFamily="Segoe UI Emoji"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+
 
         <!-- CheckBox Style for Dark Theme -->
         <Style TargetType="{x:Type CheckBox}">
             <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        
+        <!-- Hand cursor for all WPF-UI buttons -->
+        <Style TargetType="{x:Type ui:Button}" BasedOn="{StaticResource {x:Type ui:Button}}">
+            <Setter Property="Cursor" Value="Hand"/>
         </Style>
     </ui:FluentWindow.Resources>
 
@@ -108,14 +87,21 @@
             <ui:TitleBar.Header>
                 <StackPanel Orientation="Horizontal" Margin="0,0,8,0">
                     <ui:Button x:Name="PinButton" 
-                               Icon="{ui:SymbolIcon Pin24}"
                                ToolTip="Always on Top"
                                Appearance="Transparent"
-                               Click="PinButton_Click"/>
+                               Click="PinButton_Click">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Symbol="Pin24"/>
+                        </ui:Button.Icon>
+                    </ui:Button>
                     <ui:Button x:Name="HelpButton"
-                               Content="Help"
+                               ToolTip="Help &amp; About"
                                Appearance="Transparent"
-                               Click="HelpButton_Click"/>
+                               Click="HelpButton_Click" Margin="4,0,0,0">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Symbol="QuestionCircle24"/>
+                        </ui:Button.Icon>
+                    </ui:Button>
                 </StackPanel>
             </ui:TitleBar.Header>
         </ui:TitleBar>
@@ -139,9 +125,14 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <Expander Grid.Column="0" Header="🔐 Key/IV Configuration (Plaintext)" 
-                      Foreground="{DynamicResource TextFillColorPrimaryBrush}" IsExpanded="False" Margin="0,0,10,0"
-                      FontFamily="Segoe UI Emoji">
+            <Expander Grid.Column="0" IsExpanded="False" Margin="10,5,10,0"
+                      Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+                <Expander.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="Key24" FontSize="16" Margin="0,0,8,0"/>
+                        <TextBlock Text="Key/IV Configuration (Plaintext)" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Expander.Header>
                 <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="15" Margin="0,10,0,0">
                     <Grid>
                         <Grid.RowDefinitions>
@@ -162,13 +153,15 @@
                                       DisplayMemberPath="Name" SelectedValuePath="Id"
                                       SelectionChanged="ProfileComboBox_SelectionChanged"/>
                             
-                            <ui:Button x:Name="AddProfileButton" Content="➕ New" 
-                                    Style="{StaticResource SecondaryButton}" 
+                            <ui:Button x:Name="AddProfileButton" Content="New" 
+                                    Icon="{ui:SymbolIcon Symbol=Add24}"
+                                    Appearance="Secondary" 
                                     Padding="10,5" Margin="0,0,5,0"
                                     Click="AddProfileButton_Click" ToolTip="Create new profile"/>
                             
-                            <ui:Button x:Name="DeleteProfileButton" Content="🗑️" 
-                                    Style="{StaticResource SecondaryButton}" 
+                            <ui:Button x:Name="DeleteProfileButton"
+                                    Icon="{ui:SymbolIcon Symbol=Delete24}"
+                                    Appearance="Secondary" 
                                     Padding="10,5" 
                                     Click="DeleteProfileButton_Click" ToolTip="Delete current profile"/>
                         </StackPanel>
@@ -179,10 +172,14 @@
                             <Grid>
                                 <TextBox x:Name="KeyTextBox" Style="{StaticResource InputTextBox}"
                                      TextChanged="KeyTextBox_TextChanged"/>
-                                <ui:Button x:Name="KeyShowButton" Content="👁️" Style="{StaticResource SmallButton}"
+                                <ui:Button x:Name="KeyShowButton" Appearance="Transparent"
                                     HorizontalAlignment="Right" VerticalAlignment="Center"
                                     Width="35" Margin="0,5,8,5" Click="KeyShowButton_Click"
-                                    ToolTip="Show/Hide Key"/>
+                                    ToolTip="Show/Hide Key">
+                                    <ui:Button.Icon>
+                                        <ui:SymbolIcon Symbol="Eye24"/>
+                                    </ui:Button.Icon>
+                                </ui:Button>
                             </Grid>
                         </StackPanel>
 
@@ -191,23 +188,39 @@
                             <Grid>
                                 <TextBox x:Name="IVTextBox" Style="{StaticResource InputTextBox}"
                                      TextChanged="IVTextBox_TextChanged"/>
-                                <ui:Button x:Name="IVShowButton" Content="👁️" Style="{StaticResource SmallButton}"
+                                <ui:Button x:Name="IVShowButton" Appearance="Transparent"
                                     HorizontalAlignment="Right" VerticalAlignment="Center"
                                     Width="35" Margin="0,5,8,5" Click="IVShowButton_Click"
-                                    ToolTip="Show/Hide IV"/>
+                                    ToolTip="Show/Hide IV">
+                                    <ui:Button.Icon>
+                                        <ui:SymbolIcon Symbol="Eye24"/>
+                                    </ui:Button.Icon>
+                                </ui:Button>
                             </Grid>
                         </StackPanel>
 
                         <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
-                            <ui:Button Content="🔄 Reset" Style="{StaticResource SecondaryButton}"
+                            <ui:Button Content="Reset" Appearance="Secondary"
                                 Click="ResetKeysButton_Click" Margin="0,0,5,0"
-                                ToolTip="Reset to default keys"/>
-                            <ui:Button Content="📌 Set Default" Style="{StaticResource SecondaryButton}"
+                                ToolTip="Reset to default keys">
+                                <ui:Button.Icon>
+                                    <ui:SymbolIcon Symbol="ArrowCounterclockwise24"/>
+                                </ui:Button.Icon>
+                            </ui:Button>
+                            <ui:Button Content="Set Default" Appearance="Secondary"
                                 Click="SetDefaultKeysButton_Click" Margin="5,0,5,0"
-                                ToolTip="Set current keys as new default"/>
-                            <ui:Button Content="💾 Save" Style="{StaticResource ModernButton}"
+                                ToolTip="Set current keys as new default">
+                                <ui:Button.Icon>
+                                    <ui:SymbolIcon Symbol="Pin24"/>
+                                </ui:Button.Icon>
+                            </ui:Button>
+                            <ui:Button Content="Save" Appearance="Primary"
                                 Background="{DynamicResource AccentGreen}" Click="SaveKeysButton_Click"
-                                ToolTip="Save keys to encrypted config" Margin="5,0,0,0"/>
+                                ToolTip="Save keys to encrypted config" Margin="5,0,0,0">
+                                <ui:Button.Icon>
+                                    <ui:SymbolIcon Symbol="Save24"/>
+                                </ui:Button.Icon>
+                            </ui:Button>
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -234,7 +247,7 @@
         <Grid Grid.Row="3" Margin="0,10,0,10">
             <!-- Operations Section -->
             <Grid x:Name="OperationsSection">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,10,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="20,0,20,0">
                     <Grid Margin="0,15,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/> <!-- Encrypt/Decrypt Panels -->
@@ -261,7 +274,8 @@
                                 </Grid.RowDefinitions>
 
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
-                                    <TextBlock Text="🔒 ENCRYPT" FontWeight="Bold" FontSize="18"
+                                    <ui:SymbolIcon Symbol="LockClosed24" FontSize="20" Foreground="{DynamicResource AccentGreen}" Margin="0,0,8,0"/>
+                                    <TextBlock Text="ENCRYPT" FontWeight="Bold" FontSize="18"
                                                Foreground="{DynamicResource AccentGreen}" VerticalAlignment="Center"/>
                                     <CheckBox x:Name="EncryptAutoDetectCheckBox" Content="Auto-detect" 
                                               IsChecked="True" VerticalAlignment="Center" Margin="20,0,0,0"/>
@@ -274,21 +288,33 @@
                                                  TextChanged="EncryptInputTextBox_TextChanged"
                                                  KeyDown="EncryptInputTextBox_KeyDown"
                                                  Height="45"/>
-                                        <ui:Button Content="📋" Style="{StaticResource SmallButton}"
+                                        <ui:Button Appearance="Transparent"
                                                 HorizontalAlignment="Right" VerticalAlignment="Center"
                                                 Width="35" Margin="0,5,8,5" Click="EncryptPasteButton_Click"
-                                                ToolTip="Paste from clipboard"/>
+                                                ToolTip="Paste from clipboard">
+                                            <ui:Button.Icon>
+                                                <ui:SymbolIcon Symbol="ClipboardPaste24"/>
+                                            </ui:Button.Icon>
+                                        </ui:Button>
                                     </Grid>
                                 </StackPanel>
 
                                 <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10,0,10">
-                                    <ui:Button Content="🔐 Encrypt" Style="{StaticResource ModernButton}"
-                                            Click="EncryptButton_Click"/>
-                                    <ui:Button Content="Clear" Style="{StaticResource SecondaryButton}"
-                                            Click="EncryptClearButton_Click"/>
-                                    <ui:Button x:Name="EncryptFavoriteButton" Content="🏷️" Style="{StaticResource StarButton}"
-                                            Click="EncryptFavoriteButton_Click" Margin="10,0,0,0"
-                                            ToolTip="Add to bookmarks"/>
+                                    <ui:Button Content="Encrypt" Appearance="Primary"
+                                            Click="EncryptButton_Click" Margin="0,0,8,0">
+                                        <ui:Button.Icon>
+                                            <ui:SymbolIcon Symbol="LockClosed24"/>
+                                        </ui:Button.Icon>
+                                    </ui:Button>
+                                    <ui:Button Content="Clear" Appearance="Secondary"
+                                            Click="EncryptClearButton_Click" Margin="0,0,12,0"/>
+                                    <ui:Button x:Name="EncryptFavoriteButton" Appearance="Transparent"
+                                            Click="EncryptFavoriteButton_Click"
+                                            ToolTip="Add to bookmarks">
+                                        <ui:Button.Icon>
+                                            <ui:SymbolIcon Symbol="Bookmark24" Filled="False"/>
+                                        </ui:Button.Icon>
+                                    </ui:Button>
                                 </StackPanel>
 
                                 <StackPanel Grid.Row="3">
@@ -318,7 +344,8 @@
                                 </Grid.RowDefinitions>
 
                                 <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,15">
-                                    <TextBlock Text="🔒 DECRYPT" FontWeight="Bold" FontSize="18"
+                                    <ui:SymbolIcon Symbol="LockOpen24" FontSize="20" Foreground="{DynamicResource AccentPurple}" Margin="0,0,8,0"/>
+                                    <TextBlock Text="DECRYPT" FontWeight="Bold" FontSize="18"
                                                Foreground="{DynamicResource AccentPurple}" VerticalAlignment="Center"/>
                                     <CheckBox x:Name="DecryptAutoDetectCheckBox" Content="Auto-detect" 
                                               IsChecked="True" VerticalAlignment="Center" Margin="20,0,0,0"/>
@@ -331,21 +358,33 @@
                                                  TextChanged="DecryptInputTextBox_TextChanged"
                                                  KeyDown="DecryptInputTextBox_KeyDown"
                                                  Height="45"/>
-                                        <ui:Button Content="📋" Style="{StaticResource SmallButton}"
+                                        <ui:Button Appearance="Transparent"
                                                 HorizontalAlignment="Right" VerticalAlignment="Center"
                                                 Width="35" Margin="0,5,8,5" Click="DecryptPasteButton_Click"
-                                                ToolTip="Paste from clipboard"/>
+                                                ToolTip="Paste from clipboard">
+                                            <ui:Button.Icon>
+                                                <ui:SymbolIcon Symbol="ClipboardPaste24"/>
+                                            </ui:Button.Icon>
+                                        </ui:Button>
                                     </Grid>
                                 </StackPanel>
 
                                 <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10,0,10">
-                                    <ui:Button Content="🔓 Decrypt" Style="{StaticResource ModernButton}"
-                                            Click="DecryptButton_Click"/>
-                                    <ui:Button Content="Clear" Style="{StaticResource SecondaryButton}"
-                                            Click="DecryptClearButton_Click"/>
-                                    <ui:Button x:Name="DecryptFavoriteButton" Content="🏷️" Style="{StaticResource StarButton}"
-                                            Click="DecryptFavoriteButton_Click" Margin="10,0,0,0"
-                                            ToolTip="Add to bookmarks"/>
+                                    <ui:Button Content="Decrypt" Appearance="Primary"
+                                            Click="DecryptButton_Click" Margin="0,0,8,0">
+                                        <ui:Button.Icon>
+                                            <ui:SymbolIcon Symbol="LockOpen24"/>
+                                        </ui:Button.Icon>
+                                    </ui:Button>
+                                    <ui:Button Content="Clear" Appearance="Secondary"
+                                            Click="DecryptClearButton_Click" Margin="0,0,12,0"/>
+                                    <ui:Button x:Name="DecryptFavoriteButton" Appearance="Transparent"
+                                            Click="DecryptFavoriteButton_Click"
+                                            ToolTip="Add to bookmarks">
+                                        <ui:Button.Icon>
+                                            <ui:SymbolIcon Symbol="Bookmark24" Filled="False"/>
+                                        </ui:Button.Icon>
+                                    </ui:Button>
                                 </StackPanel>
 
                                 <StackPanel Grid.Row="3">
@@ -381,12 +420,13 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <ui:Button Style="{StaticResource SmallButton}" 
+                                        <ui:Button Appearance="Secondary" 
                                                 Click="RecentItemButton_Click" Tag="{Binding}"
-                                                MaxWidth="200" ToolTip="{Binding Output}">
+                                                MaxWidth="220" Margin="0,0,8,8" Padding="12,8"
+                                                ToolTip="{Binding Output}">
                                             <TextBlock Text="{Binding Converter={x:Static local:NoteOrOutputConverter.Instance}}" 
                                                        TextTrimming="CharacterEllipsis" 
-                                                       FontFamily="Consolas" FontSize="11"/>
+                                                       FontFamily="Consolas" FontSize="12" MaxWidth="180"/>
                                         </ui:Button>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
@@ -422,8 +462,11 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="📂 Batch Processing" FontWeight="Bold" FontSize="16" FontFamily="Segoe UI Emoji"
-                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="DocumentMultiple24" FontSize="18" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                                <TextBlock Text="Batch Processing" FontWeight="Bold" FontSize="16"
+                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            </StackPanel>
                             <TextBlock x:Name="BatchRowCountText" Grid.Column="2" Text="" 
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}" FontSize="13"
                                        VerticalAlignment="Center"/>
@@ -439,12 +482,16 @@
                             <TextBox x:Name="BatchFilePathTextBox" Grid.Column="0" 
                                      Style="{StaticResource InputTextBox}" Height="45"
                                      IsReadOnly="True" TextAlignment="Center" VerticalContentAlignment="Center"
-                                     Text="📥 Drop file here or click Browse..."
+                                     Text="Drop file here or click Browse..."
                                      Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                            <ui:Button Grid.Column="1" Content="📁 Browse" 
-                                    Style="{StaticResource ModernButton}" 
+                            <ui:Button Grid.Column="1" Content="Browse" 
+                                    Appearance="Primary" 
                                     Margin="10,0,0,0" Padding="15,8" Height="45"
-                                    Click="BrowseBatchFile_Click"/>
+                                    Click="BrowseBatchFile_Click">
+                                <ui:Button.Icon>
+                                    <ui:SymbolIcon Symbol="FolderOpen24"/>
+                                </ui:Button.Icon>
+                            </ui:Button>
                         </Grid>
 
                         <!-- Options Row -->
@@ -481,10 +528,10 @@
                         <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,15">
                             <TextBlock Text="Operation:" Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
                                        VerticalAlignment="Center" Margin="0,0,15,0"/>
-                            <RadioButton x:Name="BatchEncryptRadio" Content="🔐 Encrypt" 
+                            <RadioButton x:Name="BatchEncryptRadio" Content="Encrypt" 
                                          IsChecked="True" Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                          GroupName="BatchOperation" Margin="0,0,20,0"/>
-                            <RadioButton x:Name="BatchDecryptRadio" Content="🔓 Decrypt" 
+                            <RadioButton x:Name="BatchDecryptRadio" Content="Decrypt" 
                                          Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                          GroupName="BatchOperation"/>
                         </StackPanel>
@@ -504,10 +551,13 @@
                                      Text="(auto-generated)"
                                      Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                      TextChanged="BatchOutputPath_TextChanged"/>
-                            <ui:Button Grid.Column="2" Content="📁" 
-                                    Style="{StaticResource SecondaryButton}" 
+                            <ui:Button Grid.Column="2" Appearance="Secondary" 
                                     Margin="10,0,0,0" Padding="10,5" Width="45" Height="45"
-                                    Click="BrowseOutputFile_Click" ToolTip="Choose output location"/>
+                                    Click="BrowseOutputFile_Click" ToolTip="Choose output location">
+                                <ui:Button.Icon>
+                                    <ui:SymbolIcon Symbol="FolderOpen24"/>
+                                </ui:Button.Icon>
+                            </ui:Button>
                         </Grid>
 
                         <!-- Preview Panel / Log Panel -->
@@ -519,11 +569,14 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
-                                <TextBlock x:Name="BatchPreviewHeader" Grid.Row="0" Text="📋 Preview" FontFamily="Segoe UI Emoji"
-                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" FontSize="12" Margin="0,0,0,8"/>
+                                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
+                                    <ui:SymbolIcon Symbol="DocumentBulletList24" FontSize="14" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,6,0"/>
+                                    <TextBlock x:Name="BatchPreviewHeader" Text="Preview"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" FontSize="12"/>
+                                </StackPanel>
                                 <DataGrid x:Name="BatchPreviewDataGrid" Grid.Row="1" 
                                           AutoGenerateColumns="False" IsReadOnly="True"
-                                          MaxHeight="100" CanUserAddRows="False"
+                                          CanUserAddRows="False"
                                           Background="Transparent" BorderThickness="0"
                                           HeadersVisibility="Column" GridLinesVisibility="Horizontal"
                                           HorizontalGridLinesBrush="{DynamicResource ControlStrokeColorDefaultBrush}">
@@ -567,12 +620,20 @@
                                          TextWrapping="Wrap" IsReadOnly="True"
                                          VerticalScrollBarVisibility="Auto"/>
                                 <StackPanel Grid.Column="1" Orientation="Vertical">
-                                    <ui:Button Content="📋" Style="{StaticResource SecondaryButton}"
+                                    <ui:Button Appearance="Secondary"
                                             Margin="0,0,0,5" Padding="8,5"
-                                            Click="CopyBatchSummary_Click" ToolTip="Copy summary"/>
-                                    <ui:Button Content="📂" Style="{StaticResource SecondaryButton}"
+                                            Click="CopyBatchSummary_Click" ToolTip="Copy summary">
+                                        <ui:Button.Icon>
+                                            <ui:SymbolIcon Symbol="Copy24"/>
+                                        </ui:Button.Icon>
+                                    </ui:Button>
+                                    <ui:Button Appearance="Secondary"
                                             Padding="8,5"
-                                            Click="OpenBatchOutputFolder_Click" ToolTip="Open output folder"/>
+                                            Click="OpenBatchOutputFolder_Click" ToolTip="Open output folder">
+                                        <ui:Button.Icon>
+                                            <ui:SymbolIcon Symbol="FolderOpen24"/>
+                                        </ui:Button.Icon>
+                                    </ui:Button>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -580,20 +641,32 @@
                         <!-- Action Buttons -->
                         <StackPanel Grid.Row="8" Orientation="Horizontal" 
                                     HorizontalAlignment="Right" Margin="0,15,0,0">
-                            <ui:Button x:Name="BatchResetButton" Content="🧹 Clear" 
-                                    Style="{StaticResource SecondaryButton}" 
+                            <ui:Button x:Name="BatchResetButton" Content="Clear" 
+                                    Appearance="Secondary" 
                                     Padding="15,10" Margin="0,0,10,0" Width="130" Height="45"
-                                    Click="BatchReset_Click"/>
-                            <ui:Button x:Name="BatchCancelButton" Content="❌ Cancel" 
-                                    Style="{StaticResource SecondaryButton}" 
+                                    Click="BatchReset_Click">
+                                <ui:Button.Icon>
+                                    <ui:SymbolIcon Symbol="Delete24"/>
+                                </ui:Button.Icon>
+                            </ui:Button>
+                            <ui:Button x:Name="BatchCancelButton" Content="Cancel" 
+                                    Appearance="Secondary" 
                                     Padding="15,10" Margin="0,0,10,0" Width="130" Height="45"
                                     Foreground="{DynamicResource AccentRed}"
                                     BorderBrush="{DynamicResource AccentRed}" BorderThickness="1"
-                                    IsEnabled="False" Click="BatchCancel_Click"/>
-                            <ui:Button x:Name="BatchProcessButton" Content="🔄 Process" 
-                                    Style="{StaticResource ModernButton}" 
+                                    IsEnabled="False" Click="BatchCancel_Click">
+                                <ui:Button.Icon>
+                                    <ui:SymbolIcon Symbol="Dismiss24"/>
+                                </ui:Button.Icon>
+                            </ui:Button>
+                            <ui:Button x:Name="BatchProcessButton" Content="Process" 
+                                    Appearance="Primary" 
                                     Padding="15,10" Width="130" Height="45" IsEnabled="False"
-                                    Click="BatchProcess_Click"/>
+                                    Click="BatchProcess_Click">
+                                <ui:Button.Icon>
+                                    <ui:SymbolIcon Symbol="Play24"/>
+                                </ui:Button.Icon>
+                            </ui:Button>
                         </StackPanel>
                     </Grid>
 
@@ -617,24 +690,31 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <TextBlock x:Name="HistoryLabel" Grid.Column="0" Text="📜 History" FontWeight="Bold" FontSize="14" FontFamily="Segoe UI Emoji"
-                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"
-                                       Cursor="Hand" MouseLeftButtonDown="HistoryLabel_Click"
-                                       ToolTip="Click to show all history"/>
+                            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="History24" FontSize="18" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                                <TextBlock x:Name="HistoryLabel" Text="History" FontWeight="Bold" FontSize="14"
+                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"
+                                           Cursor="Hand" MouseLeftButtonDown="HistoryLabel_Click"
+                                           ToolTip="Click to show all history"/>
+                            </StackPanel>
 
                             <Grid Grid.Column="1" Margin="20,0">
                                 <TextBox x:Name="HistorySearchTextBox" Style="{StaticResource InputTextBox}" Height="35"
                                          TextChanged="HistorySearchTextBox_TextChanged" Padding="30,8,8,8"
                                          ToolTip="Search history by input, output, or note"/>
-                                <TextBlock Text="🔍" IsHitTestVisible="False" 
+                                <ui:SymbolIcon Symbol="Search24" IsHitTestVisible="False" 
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
-                                           Margin="10,0,0,0" FontSize="13"
-                                           VerticalAlignment="Center"/>
+                                           HorizontalAlignment="Left" VerticalAlignment="Center"
+                                           Margin="12,0,0,0" FontSize="16"/>
                             </Grid>
 
-                            <ui:Button x:Name="ClearHistoryButton" Grid.Column="2" Content="🧹 Clear History" Style="{StaticResource SecondaryButton}"
+                            <ui:Button x:Name="ClearHistoryButton" Grid.Column="2" Content="Clear History" Appearance="Secondary"
                                     Click="ClearHistoryButton_Click" ToolTip="Delete all history entries (bookmarks preserved)"
-                                    Foreground="{DynamicResource AccentRed}"/>
+                                    Foreground="{DynamicResource AccentRed}" Padding="12,8">
+                                <ui:Button.Icon>
+                                    <ui:SymbolIcon Symbol="Delete24"/>
+                                </ui:Button.Icon>
+                            </ui:Button>
                         </Grid>
 
                         <DataGrid x:Name="HistoryDataGrid" Grid.Row="1" 
@@ -770,15 +850,23 @@
                                         </Style>
                                     </DataGridTextColumn.EditingElementStyle>
                                 </DataGridTextColumn>
-                                <DataGridTemplateColumn Header="🔖" Width="50" MinWidth="50" MaxWidth="50" CanUserResize="False">
+                                <DataGridTemplateColumn Width="50" MinWidth="50" MaxWidth="50" CanUserResize="False">
+                                    <DataGridTemplateColumn.Header>
+                                        <ui:SymbolIcon Symbol="Bookmark24" FontSize="16"/>
+                                    </DataGridTemplateColumn.Header>
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <ui:Button Content="{Binding IsFavorite, Converter={x:Static local:BoolToBookmarkConverter.Instance}}"
-                                                    FontSize="11"
+                                            <ui:Button 
+                                                    FontSize="18" Padding="0" BorderThickness="0"
+                                                    Appearance="Transparent" Foreground="{DynamicResource AccentYellow}"
                                                     Click="HistoryFavoriteButton_Click"
+                                                    HorizontalAlignment="Center" VerticalAlignment="Center"
                                                     Tag="{Binding}">
+                                                <ui:Button.Icon>
+                                                    <ui:SymbolIcon Symbol="Bookmark24" Filled="{Binding IsFavorite}" FontSize="18"/>
+                                                </ui:Button.Icon>
                                                 <Button.Style>
-                                                    <Style TargetType="Button" BasedOn="{StaticResource StarButton}">
+                                                    <Style TargetType="{x:Type ui:Button}" BasedOn="{StaticResource {x:Type ui:Button}}">
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding IsFavorite}" Value="True">
                                                                 <Setter Property="ToolTip" Value="Remove bookmark"/>
@@ -794,23 +882,38 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn Header="📋" Width="50" MinWidth="50" MaxWidth="50" CanUserResize="False">
+                                <DataGridTemplateColumn Width="50" MinWidth="50" MaxWidth="50" CanUserResize="False">
+                                    <DataGridTemplateColumn.Header>
+                                        <ui:SymbolIcon Symbol="Copy24" FontSize="16"/>
+                                    </DataGridTemplateColumn.Header>
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <ui:Button Content="📋" Style="{StaticResource StarButton}"
-                                                    FontSize="12"
+                                            <ui:Button Appearance="Transparent" Padding="0" BorderThickness="0"
                                                     Click="HistoryCopyButton_Click" Tag="{Binding}"
-                                                    ToolTip="Copy output"/>
+                                                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                    ToolTip="Copy output">
+                                                <ui:Button.Icon>
+                                                    <ui:SymbolIcon Symbol="Copy24" FontSize="16"/>
+                                                </ui:Button.Icon>
+                                            </ui:Button>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Header="🗑️" Width="50" MinWidth="50" MaxWidth="50" CanUserResize="False">
+                                <DataGridTemplateColumn Width="50" MinWidth="50" MaxWidth="50" CanUserResize="False">
+                                    <DataGridTemplateColumn.Header>
+                                        <ui:SymbolIcon Symbol="Delete24" FontSize="16"/>
+                                    </DataGridTemplateColumn.Header>
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <ui:Button Content="🗑️" Style="{StaticResource StarButton}"
-                                                    FontSize="12"
+                                            <ui:Button Appearance="Transparent" Padding="0" BorderThickness="0"
+                                                    Foreground="{DynamicResource AccentRed}"
                                                     Click="HistoryDeleteButton_Click" Tag="{Binding}"
-                                                    ToolTip="Delete this item permanently"/>
+                                                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                    ToolTip="Delete this item permanently">
+                                                <ui:Button.Icon>
+                                                    <ui:SymbolIcon Symbol="Delete24" FontSize="16"/>
+                                                </ui:Button.Icon>
+                                            </ui:Button>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -835,22 +938,29 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <TextBlock Grid.Column="0" Text="🔖 Bookmarks" FontWeight="Bold" FontSize="14" FontFamily="Segoe UI Emoji"
-                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="Bookmark24" FontSize="18" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                                <TextBlock Text="Bookmarks" FontWeight="Bold" FontSize="14"
+                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                            </StackPanel>
 
                             <Grid Grid.Column="1" Margin="20,0">
                                 <TextBox x:Name="BookmarksSearchTextBox" Style="{StaticResource InputTextBox}" Height="35"
                                          TextChanged="BookmarksSearchTextBox_TextChanged" Padding="30,8,8,8"
                                          ToolTip="Search bookmarks by input, output, or note"/>
-                                <TextBlock Text="🔍" IsHitTestVisible="False" 
+                                <ui:SymbolIcon Symbol="Search24" IsHitTestVisible="False" 
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
-                                           Margin="10,0,0,0" FontSize="13"
-                                           VerticalAlignment="Center"/>
+                                           HorizontalAlignment="Left" VerticalAlignment="Center"
+                                           Margin="12,0,0,0" FontSize="16"/>
                             </Grid>
 
-                            <ui:Button x:Name="ClearBookmarksButton" Grid.Column="2" Content="🧹 Clear Bookmarks" Style="{StaticResource SecondaryButton}"
+                            <ui:Button x:Name="ClearBookmarksButton" Grid.Column="2" Content="Clear Bookmarks" Appearance="Secondary"
                                     Click="ClearBookmarksButton_Click" ToolTip="Remove all bookmarks"
-                                    Foreground="{DynamicResource AccentRed}"/>
+                                    Foreground="{DynamicResource AccentRed}" Padding="12,8">
+                                <ui:Button.Icon>
+                                    <ui:SymbolIcon Symbol="Delete24"/>
+                                </ui:Button.Icon>
+                            </ui:Button>
                         </Grid>
                         <!-- Bookmarks DataGrid -->
                         <DataGrid x:Name="BookmarksDataGrid" Grid.Row="1" 
@@ -970,15 +1080,23 @@
                                         </Style>
                                     </DataGridTextColumn.EditingElementStyle>
                                 </DataGridTextColumn>
-                                <DataGridTemplateColumn Header="🔖" Width="50" MinWidth="50" MaxWidth="50" CanUserResize="False">
+                                <DataGridTemplateColumn Width="50" MinWidth="50" MaxWidth="50" CanUserResize="False">
+                                    <DataGridTemplateColumn.Header>
+                                        <ui:SymbolIcon Symbol="Bookmark24" FontSize="16"/>
+                                    </DataGridTemplateColumn.Header>
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <ui:Button Content="{Binding IsFavorite, Converter={x:Static local:BoolToBookmarkConverter.Instance}}"
-                                                    FontSize="11"
+                                            <ui:Button 
+                                                    FontSize="18" Padding="0" BorderThickness="0"
+                                                    Appearance="Transparent" Foreground="{DynamicResource AccentYellow}"
                                                     Click="HistoryFavoriteButton_Click"
+                                                    HorizontalAlignment="Center" VerticalAlignment="Center"
                                                     Tag="{Binding}">
+                                                <ui:Button.Icon>
+                                                    <ui:SymbolIcon Symbol="Bookmark24" Filled="{Binding IsFavorite}" FontSize="18"/>
+                                                </ui:Button.Icon>
                                                 <Button.Style>
-                                                    <Style TargetType="Button" BasedOn="{StaticResource StarButton}">
+                                                    <Style TargetType="{x:Type ui:Button}" BasedOn="{StaticResource {x:Type ui:Button}}">
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding IsFavorite}" Value="True">
                                                                 <Setter Property="ToolTip" Value="Remove bookmark"/>
@@ -994,26 +1112,42 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn Header="📋" Width="50" MinWidth="50" MaxWidth="50" CanUserResize="False">
+                                <DataGridTemplateColumn Width="50" MinWidth="50" MaxWidth="50" CanUserResize="False">
+                                    <DataGridTemplateColumn.Header>
+                                        <ui:SymbolIcon Symbol="Copy24" FontSize="16"/>
+                                    </DataGridTemplateColumn.Header>
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <ui:Button Content="📋" Style="{StaticResource StarButton}"
-                                                    FontSize="12"
+                                            <ui:Button Appearance="Transparent" Padding="0" BorderThickness="0"
                                                     Click="HistoryCopyButton_Click" Tag="{Binding}"
-                                                    ToolTip="Copy output"/>
+                                                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                    ToolTip="Copy output">
+                                                <ui:Button.Icon>
+                                                    <ui:SymbolIcon Symbol="Copy24" FontSize="16"/>
+                                                </ui:Button.Icon>
+                                            </ui:Button>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Header="🗑️" Width="50" MinWidth="50" MaxWidth="50" CanUserResize="False">
+                                <DataGridTemplateColumn Width="50" MinWidth="50" MaxWidth="50" CanUserResize="False">
+                                    <DataGridTemplateColumn.Header>
+                                        <ui:SymbolIcon Symbol="Delete24" FontSize="16"/>
+                                    </DataGridTemplateColumn.Header>
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <ui:Button Content="🗑️" Style="{StaticResource StarButton}"
-                                                    FontSize="12"
-                                                    Click="BookmarksDeleteButton_Click" Tag="{Binding}"
-                                                    ToolTip="Remove bookmark"/>
+                                            <ui:Button Appearance="Transparent" Padding="0" BorderThickness="0"
+                                                    Foreground="{DynamicResource AccentRed}"
+                                                    Click="HistoryDeleteButton_Click" Tag="{Binding}"
+                                                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                    ToolTip="Delete this item permanently">
+                                                <ui:Button.Icon>
+                                                    <ui:SymbolIcon Symbol="Delete24" FontSize="16"/>
+                                                </ui:Button.Icon>
+                                            </ui:Button>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
+
                             </DataGrid.Columns>
                         </DataGrid>
                     </Grid>
@@ -1044,7 +1178,7 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock x:Name="StatusTextBlock" Text="✓ Ready" FontSize="13"
                            Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
-                <ui:Button Grid.Column="1" Content="⚙️ Settings" Style="{StaticResource SecondaryButton}"
+                <ui:Button Grid.Column="1" Content="⚙️ Settings" Appearance="Secondary"
                     Click="SettingsButton_Click" VerticalAlignment="Center" Height="30" Padding="10,0" Margin="10,0,0,0"/>
             </Grid>
         </Border>

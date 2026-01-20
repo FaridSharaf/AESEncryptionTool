@@ -194,6 +194,8 @@ namespace AESCryptoTool.Views
             
             if (int.TryParse(RecentItemsCountTextBox.Text, out int count) && count > 0)
             {
+                // Enforce reasonable limit for UI
+                if (count > 20) count = 20;
                 Settings.RecentItemsCount = count;
             }
             else
@@ -264,6 +266,17 @@ namespace AESCryptoTool.Views
             {
                 MaxBookmarkItemsTextBox.Text = MaxAllowedLimit.ToString();
                 MaxBookmarkItemsTextBox.CaretIndex = MaxBookmarkItemsTextBox.Text.Length;
+            }
+        }
+
+        private const int MaxRecentItemsLimit = 20;
+
+        private void RecentItemsCountTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (int.TryParse(RecentItemsCountTextBox.Text, out int value) && value > MaxRecentItemsLimit)
+            {
+                RecentItemsCountTextBox.Text = MaxRecentItemsLimit.ToString();
+                RecentItemsCountTextBox.CaretIndex = RecentItemsCountTextBox.Text.Length;
             }
         }
     }

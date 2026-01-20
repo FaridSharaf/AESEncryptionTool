@@ -39,45 +39,7 @@
                 <Setter Property="ResizeMode" Value="NoResize"/>
             </Style>
 
-            <!-- ============================================ -->
-            <!-- BUTTON STYLES -->
-            <!-- ============================================ -->
-            <Style x:Key="ModernButton" TargetType="{x:Type Button}">
-                <Setter Property="Background" Value="{DynamicResource PrimaryAccent}"/>
-                <Setter Property="Foreground" Value="{DynamicResource TextOnAccent}"/>
-                <Setter Property="Padding" Value="16,8"/>
-                <Setter Property="Margin" Value="5"/>
-                <Setter Property="BorderThickness" Value="0"/>
-                <Setter Property="FontWeight" Value="SemiBold"/>
-                <Setter Property="Cursor" Value="Hand"/>
-                <Setter Property="FontFamily" Value="Segoe UI Emoji"/>
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="{x:Type Button}">
-                            <Border x:Name="border" Background="{TemplateBinding Background}" 
-                                    CornerRadius="6" Padding="{TemplateBinding Padding}">
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                  TextElement.FontFamily="Segoe UI Emoji"/>
-                            </Border>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="border" Property="Opacity" Value="0.9"/>
-                                </Trigger>
-                                <Trigger Property="IsEnabled" Value="False">
-                                    <Setter TargetName="border" Property="Opacity" Value="0.5"/>
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
 
-            <Style x:Key="SecondaryButton" TargetType="{x:Type Button}" BasedOn="{StaticResource ModernButton}">
-                <Setter Property="Background" Value="{DynamicResource CardBg}"/>
-                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                <Setter Property="BorderThickness" Value="1"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
-            </Style>
 
             <!-- ============================================ -->
             <!-- TEXTBOX / COMBOBOX / LABEL / CHECKBOX STYLES -->

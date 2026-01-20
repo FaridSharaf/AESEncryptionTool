@@ -29,7 +29,7 @@ namespace AESCryptoTool.Views
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return (value is bool b && b) ? "🔖" : "🏷️";
+            return (value is bool b && b) ? "★" : "☆";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -49,7 +49,7 @@ namespace AESCryptoTool.Views
         {
             if (value is HistoryEntry entry)
             {
-                return string.IsNullOrWhiteSpace(entry.Note) ? entry.Output : $"📝 {entry.Note}";
+                return string.IsNullOrWhiteSpace(entry.Note) ? entry.Output : $"[Note] {entry.Note}";
             }
             return value?.ToString() ?? "";
         }
@@ -82,7 +82,6 @@ namespace AESCryptoTool.Views
         // System Tray
         private System.Windows.Forms.NotifyIcon? _notifyIcon;
         private Button? _minimizeButton;
-        private Button? _pinButton;
 
         public MainWindow()
         {
@@ -278,26 +277,22 @@ namespace AESCryptoTool.Views
             _minimizeButton = GetTemplateChild("MinimizeButton") as Button;
             UpdateMinimizeTooltip();
             
-            _pinButton = GetTemplateChild("PinButton") as Button;
-            if (_pinButton != null)
-            {
-                _pinButton.Click += PinButton_Click;
-                UpdatePinButtonState();
-            }
+            // PinButton is handled directly via XAML field 'PinButton'
+            UpdatePinButtonState();
         }
 
         private void HelpButton_Click(object sender, RoutedEventArgs e)
         {
             CustomMessageBox.Show(
-                "AES Encryption & Decryption Tool\n\n" +
-                "Version 2.2.0\n" +
-                "Created by Farid Ahmed\n\n" +
+                "AES Crypto Tool v2.2.1\n\n" +
+                "Advanced Encryption Standard (AES-256) utility for secure text and file processing.\n\n" +
                 "Features:\n" +
-                "- AES-256 Encryption/Decryption\n" +
-                "- Multiple Key Profiles\n" +
-                "- Batch Processing\n" +
-                "- History & Bookmarks\n" +
-                "- Secure Data Import/Export",
+                "• Encrypt/Decrypt text with custom or random keys\n" +
+                "• Manage multiple Key Profiles securely\n" +
+                "• Batch process Excel/CSV files (Encrypt/Decrypt columns)\n" +
+                "• History & Bookmarks for quick access\n" +
+                "• Secure Data Import/Export\n\n" +
+                "Created by Farid Ahmed",
                 "About AES Crypto Tool",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
@@ -313,20 +308,22 @@ namespace AESCryptoTool.Views
 
         private void UpdatePinButtonState()
         {
-            if (_pinButton != null)
+            if (PinButton != null)
             {
+                // Update Icon to Filled/Outline based on state
+                if (PinButton.Icon is Wpf.Ui.Controls.SymbolIcon symbolIcon)
+                {
+                    symbolIcon.Filled = _settings.AlwaysOnTop;
+                }
+                
+                // Update Tooltip logic
+                PinButton.ToolTip = _settings.AlwaysOnTop ? "Unpin (Always on Top)" : "Pin (Always on Top)";
+                
+                // Optional: Change Foreground to indicate active state
                 if (_settings.AlwaysOnTop)
-                {
-                    _pinButton.Content = "📌"; // Pinned (Pushpin)
-                    _pinButton.ToolTip = "Unpin (Always on Top is ON)";
-                    _pinButton.Foreground = (System.Windows.Media.Brush)FindResource("PrimaryAccent");
-                }
+                    PinButton.Foreground = (System.Windows.Media.Brush)FindResource("SystemAccentColorPrimaryBrush"); // Or specific accent
                 else
-                {
-                    _pinButton.Content = "📍"; // Unpinned (Round pushpin or different icon)
-                    _pinButton.ToolTip = "Pin to Top";
-                    _pinButton.Foreground = (System.Windows.Media.Brush)FindResource("TextSecondary");
-                }
+                    PinButton.Foreground = (System.Windows.Media.Brush)FindResource("TextFillColorPrimaryBrush");
             }
         }
 
@@ -408,11 +405,11 @@ namespace AESCryptoTool.Views
 
             if (HistoryItems.Count > 0)
             {
-                HistoryLabel.Text = $"📜 History ({HistoryItems.Count})";
+                HistoryLabel.Text = $"History ({HistoryItems.Count})";
             }
             else
             {
-                HistoryLabel.Text = "📜 History";
+                HistoryLabel.Text = "History";
             }
 
             // Ensure button states are correct (e.g. reset to "Clear" after reload)
@@ -534,12 +531,12 @@ namespace AESCryptoTool.Views
             int count = HistoryItems.Count(x => x.IsSelected);
             if (count > 0)
             {
-                 ClearHistoryButton.Content = $"🗑️ Delete Selected ({count})";
+                 ClearHistoryButton.Content = $"Delete Selected ({count})";
                  ClearHistoryButton.ToolTip = "Delete selected items";
             }
             else
             {
-                 ClearHistoryButton.Content = "🧹 Clear History";
+                 ClearHistoryButton.Content = "Clear History";
                  ClearHistoryButton.ToolTip = "Delete all history entries (reserved)";
             }
         }
@@ -616,18 +613,19 @@ namespace AESCryptoTool.Views
             int count = BookmarksItems.Count(x => x.IsSelected);
             if (count > 0)
             {
-                 ClearBookmarksButton.Content = $"🗑️ Delete Selected ({count})";
+                 ClearBookmarksButton.Content = $"Delete Selected ({count})";
                  ClearBookmarksButton.ToolTip = "Delete selected items";
             }
             else
             {
-                 ClearBookmarksButton.Content = "🧹 Clear Bookmarks";
+                 ClearBookmarksButton.Content = "Clear Bookmarks";
                  ClearBookmarksButton.ToolTip = "Remove all bookmarks";
             }
         }
 
         private void RefreshRecentItems()
         {
+            // Limit recent items based on settings (configurable up to 20)
             var recent = HistoryManager.GetRecentItems(_settings.RecentItemsCount);
             RecentItemsControl.ItemsSource = recent;
         }
@@ -650,14 +648,17 @@ namespace AESCryptoTool.Views
         private void KeyShowButton_Click(object sender, RoutedEventArgs e)
         {
             _keyMasked = !_keyMasked;
+            if (KeyShowButton.Icon is Wpf.Ui.Controls.SymbolIcon icon)
+            {
+                icon.Symbol = _keyMasked ? Wpf.Ui.Controls.SymbolRegular.Eye24 : Wpf.Ui.Controls.SymbolRegular.EyeOff24;
+            }
+            
             if (_keyMasked)
             {
-                KeyShowButton.Content = "👁️";
                 KeyTextBox.Text = new string('•', _config.Key.Length > 0 ? _config.Key.Length : 16);
             }
             else
             {
-                KeyShowButton.Content = "🙈";
                 // Show partial mask only - never full key
                 KeyTextBox.Text = MaskValue(_config.Key);
             }
@@ -666,14 +667,17 @@ namespace AESCryptoTool.Views
         private void IVShowButton_Click(object sender, RoutedEventArgs e)
         {
             _ivMasked = !_ivMasked;
+            if (IVShowButton.Icon is Wpf.Ui.Controls.SymbolIcon icon)
+            {
+                icon.Symbol = _ivMasked ? Wpf.Ui.Controls.SymbolRegular.Eye24 : Wpf.Ui.Controls.SymbolRegular.EyeOff24;
+            }
+
             if (_ivMasked)
             {
-                IVShowButton.Content = "👁️";
                 IVTextBox.Text = new string('•', _config.IV.Length > 0 ? _config.IV.Length : 16);
             }
             else
             {
-                IVShowButton.Content = "🙈";
                 // Show partial mask only - never full IV
                 IVTextBox.Text = MaskValue(_config.IV);
             }
@@ -779,8 +783,10 @@ namespace AESCryptoTool.Views
                     
                     _keyMasked = true;
                     _ivMasked = true;
-                    KeyShowButton.Content = "👁️";
-                    IVShowButton.Content = "👁️";
+                    
+                    if (KeyShowButton.Icon is Wpf.Ui.Controls.SymbolIcon keyIcon) keyIcon.Symbol = Wpf.Ui.Controls.SymbolRegular.Eye24;
+                    if (IVShowButton.Icon is Wpf.Ui.Controls.SymbolIcon ivIcon) ivIcon.Symbol = Wpf.Ui.Controls.SymbolRegular.Eye24;
+
                     KeyTextBox.Text = new string('•', 16);
                     IVTextBox.Text = new string('•', 16);
                     
@@ -896,7 +902,10 @@ namespace AESCryptoTool.Views
         private void EncryptFavoriteButton_Click(object sender, RoutedEventArgs e)
         {
             _encryptFavorite = !_encryptFavorite;
-            EncryptFavoriteButton.Content = _encryptFavorite ? "🔖" : "🏷️";
+            if (EncryptFavoriteButton.Icon is Wpf.Ui.Controls.SymbolIcon icon)
+            {
+                icon.Filled = _encryptFavorite;
+            }
             EncryptFavoriteButton.ToolTip = _encryptFavorite ? "Remove bookmark" : "Add to bookmarks";
             
             if (_currentEncryptEntry != null)
@@ -961,7 +970,10 @@ namespace AESCryptoTool.Views
             EncryptOutputTextBox.Clear();
             EncryptNoteTextBox.Clear();
             _encryptFavorite = false;
-            EncryptFavoriteButton.Content = "🏷️";
+            if (EncryptFavoriteButton.Icon is Wpf.Ui.Controls.SymbolIcon icon)
+            {
+                icon.Filled = false;
+            }
             EncryptFavoriteButton.ToolTip = "Add to bookmarks";
             _currentEncryptEntry = null;
             EncryptInputTextBox.Focus();
@@ -1015,7 +1027,10 @@ namespace AESCryptoTool.Views
         private void DecryptFavoriteButton_Click(object sender, RoutedEventArgs e)
         {
             _decryptFavorite = !_decryptFavorite;
-            DecryptFavoriteButton.Content = _decryptFavorite ? "🔖" : "🏷️";
+            if (DecryptFavoriteButton.Icon is Wpf.Ui.Controls.SymbolIcon icon)
+            {
+                icon.Filled = _decryptFavorite;
+            }
             DecryptFavoriteButton.ToolTip = _decryptFavorite ? "Remove bookmark" : "Add to bookmarks";
             
             if (_currentDecryptEntry != null)
@@ -1160,8 +1175,8 @@ namespace AESCryptoTool.Views
 
         private void HistoryDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            // Double-click to copy output
-            if (HistoryDataGrid.SelectedItem is HistoryEntry entry)
+            // Double-click to copy output (works for both History and Bookmarks)
+            if (sender is DataGrid grid && grid.SelectedItem is HistoryEntry entry)
             {
                 Clipboard.SetText(entry.Output);
                 UpdateStatus("✓ Copied to clipboard");
@@ -1584,21 +1599,21 @@ namespace AESCryptoTool.Views
                 if (result.Success)
                 {
                     BatchProgressBar.Value = 100;
-                    BatchProgressText.Text = "✓ Complete!";
-                    BatchSummaryText.Text = $"✅ Processing complete!\n\n" +
-                        $"📊 Column: {result.TargetColumn}\n\n" +
+                    BatchProgressText.Text = "Complete!";
+                    BatchSummaryText.Text = $"PROCESSING COMPLETE\n\n" +
+                        $"Column: {result.TargetColumn}\n\n" +
                         $"✓ Processed: {result.ProcessedRows}\n" +
                         $"⏭ Skipped: {result.SkippedRows}\n" +
                         $"❌ Failed: {result.FailedRows}\n" +
                         $"⏱ Time: {result.Duration.TotalSeconds:F2}s\n\n" +
-                        $"📁 Saved to:\n{result.OutputPath}";
-                    UpdateStatus($"✓ Batch {(encrypt ? "encryption" : "decryption")} complete - {result.ProcessedRows} rows");
+                        $"Saved to:\n{result.OutputPath}";
+                    UpdateStatus($"Batch {(encrypt ? "encryption" : "decryption")} complete - {result.ProcessedRows} rows");
                 }
                 else
                 {
-                    BatchProgressText.Text = "❌ Error";
-                    BatchSummaryText.Text = $"❌ Error: {result.ErrorMessage}";
-                    UpdateStatus($"✗ Batch processing failed: {result.ErrorMessage}");
+                    BatchProgressText.Text = "Error";
+                    BatchSummaryText.Text = $"Error: {result.ErrorMessage}";
+                    UpdateStatus($"Batch processing failed: {result.ErrorMessage}");
                 }
             }
             catch (OperationCanceledException)
@@ -1799,8 +1814,8 @@ namespace AESCryptoTool.Views
                 bool hasHeader = BatchHasHeaderCheckBox.IsChecked == true;
                 string columnName = BatchColumnComboBox.SelectedItem.ToString() ?? "";
                 
-                // Get 3 preview rows
-                var previewValues = BatchProcessor.GetPreviewRows(_batchFilePath, columnName, hasHeader, 3);
+                // Get 2 preview rows
+                var previewValues = BatchProcessor.GetPreviewRows(_batchFilePath, columnName, hasHeader, 2);
                 int totalRows = BatchProcessor.GetRowCount(_batchFilePath, hasHeader);
                 
                 if (previewValues.Count > 0)
@@ -1833,7 +1848,7 @@ namespace AESCryptoTool.Views
             {
                 bool hasHeader = BatchHasHeaderCheckBox.IsChecked == true;
                 int rowCount = BatchProcessor.GetRowCount(_batchFilePath, hasHeader);
-                BatchRowCountText.Text = $"📊 {rowCount:N0} rows";
+                BatchRowCountText.Text = $"{rowCount:N0} rows";
             }
             catch
             {
@@ -1861,7 +1876,7 @@ namespace AESCryptoTool.Views
             }
 
             BatchPreviewDataGrid.ItemsSource = logItems;
-            BatchPreviewHeader.Text = result.Success ? "📋 Processing Log" : "📋 Error Log";
+            BatchPreviewHeader.Text = result.Success ? "Processing Log" : "Error Log";
             BatchPreviewBorder.Visibility = Visibility.Visible;
         }
 
@@ -1923,38 +1938,69 @@ namespace AESCryptoTool.Views
             }
         }
 
+        private bool _isExiting = false;
+
         private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (_settings.CloseToTray)
+            // If explicit exit or not configured to minimize to tray, just close
+            if (_isExiting || !_settings.CloseToTray)
             {
-                e.Cancel = true;
-                HideToTray();
-            }
-            else
-            {
-                // Clean up tray icon
+                 // Clean up tray icon
                 if (_notifyIcon != null)
                 {
                     _notifyIcon.Visible = false;
                     _notifyIcon.Dispose();
+                    _notifyIcon = null;
                 }
+                return;
             }
+
+            // Otherwise, minimize to tray
+            e.Cancel = true;
+            HideToTray();
         }
 
         private void HideToTray()
         {
-            this.Hide();
-            if (_notifyIcon != null)
+            if (_notifyIcon == null) return;
+            
+            // Try to set icon if missing
+            if (_notifyIcon.Icon == null)
             {
-                _notifyIcon.Visible = true;
-                
-                // Show notification only once
-                if (!_settings.HasShownTrayNotification)
-                {
-                    _notifyIcon.ShowBalloonTip(1000, "AES Crypto Tool", "Running in system tray", System.Windows.Forms.ToolTipIcon.Info);
-                    _settings.HasShownTrayNotification = true;
-                    ConfigManager.SaveSettings(_settings);
+                try 
+                { 
+                     // Try extraction first, fallback to system icon
+                     var exePath = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName;
+                     if (!string.IsNullOrEmpty(exePath))
+                        _notifyIcon.Icon = System.Drawing.Icon.ExtractAssociatedIcon(exePath);
+                     else
+                        _notifyIcon.Icon = System.Drawing.SystemIcons.Application; 
+                } 
+                catch 
+                { 
+                    // Last resort
+                    try { _notifyIcon.Icon = System.Drawing.SystemIcons.Application; } catch { }
                 }
+            }
+            
+            // If we still don't have an icon, we can't safely use the tray
+            if (_notifyIcon.Icon == null) 
+            {
+                // Can't minimize to tray without an icon, so just minimize normally
+                this.WindowState = WindowState.Minimized;
+                return;
+            }
+            
+            this.Hide();
+
+            _notifyIcon.Visible = true;
+            
+            // Show notification only once
+            if (!_settings.HasShownTrayNotification)
+            {
+                _notifyIcon.ShowBalloonTip(1000, "AES Crypto Tool", "Running in system tray", System.Windows.Forms.ToolTipIcon.Info);
+                _settings.HasShownTrayNotification = true;
+                ConfigManager.SaveSettings(_settings);
             }
         }
 
@@ -1971,10 +2017,12 @@ namespace AESCryptoTool.Views
 
         private void ExitApplication()
         {
+            _isExiting = true;
             if (_notifyIcon != null)
             {
                 _notifyIcon.Visible = false;
                 _notifyIcon.Dispose();
+                _notifyIcon = null;
             }
             System.Windows.Application.Current.Shutdown();
         }
