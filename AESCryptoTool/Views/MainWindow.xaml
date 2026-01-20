@@ -162,12 +162,12 @@
                                       DisplayMemberPath="Name" SelectedValuePath="Id"
                                       SelectionChanged="ProfileComboBox_SelectionChanged"/>
                             
-                            <Button x:Name="AddProfileButton" Content="➕ New" 
+                            <ui:Button x:Name="AddProfileButton" Content="➕ New" 
                                     Style="{StaticResource SecondaryButton}" 
                                     Padding="10,5" Margin="0,0,5,0"
                                     Click="AddProfileButton_Click" ToolTip="Create new profile"/>
                             
-                            <Button x:Name="DeleteProfileButton" Content="🗑️" 
+                            <ui:Button x:Name="DeleteProfileButton" Content="🗑️" 
                                     Style="{StaticResource SecondaryButton}" 
                                     Padding="10,5" 
                                     Click="DeleteProfileButton_Click" ToolTip="Delete current profile"/>
@@ -179,7 +179,7 @@
                             <Grid>
                                 <TextBox x:Name="KeyTextBox" Style="{StaticResource InputTextBox}"
                                      TextChanged="KeyTextBox_TextChanged"/>
-                                <Button x:Name="KeyShowButton" Content="👁️" Style="{StaticResource SmallButton}"
+                                <ui:Button x:Name="KeyShowButton" Content="👁️" Style="{StaticResource SmallButton}"
                                     HorizontalAlignment="Right" VerticalAlignment="Center"
                                     Width="35" Margin="0,5,8,5" Click="KeyShowButton_Click"
                                     ToolTip="Show/Hide Key"/>
@@ -191,7 +191,7 @@
                             <Grid>
                                 <TextBox x:Name="IVTextBox" Style="{StaticResource InputTextBox}"
                                      TextChanged="IVTextBox_TextChanged"/>
-                                <Button x:Name="IVShowButton" Content="👁️" Style="{StaticResource SmallButton}"
+                                <ui:Button x:Name="IVShowButton" Content="👁️" Style="{StaticResource SmallButton}"
                                     HorizontalAlignment="Right" VerticalAlignment="Center"
                                     Width="35" Margin="0,5,8,5" Click="IVShowButton_Click"
                                     ToolTip="Show/Hide IV"/>
@@ -199,13 +199,13 @@
                         </StackPanel>
 
                         <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Content="🔄 Reset" Style="{StaticResource SecondaryButton}"
+                            <ui:Button Content="🔄 Reset" Style="{StaticResource SecondaryButton}"
                                 Click="ResetKeysButton_Click" Margin="0,0,5,0"
                                 ToolTip="Reset to default keys"/>
-                            <Button Content="📌 Set Default" Style="{StaticResource SecondaryButton}"
+                            <ui:Button Content="📌 Set Default" Style="{StaticResource SecondaryButton}"
                                 Click="SetDefaultKeysButton_Click" Margin="5,0,5,0"
                                 ToolTip="Set current keys as new default"/>
-                            <Button Content="💾 Save" Style="{StaticResource ModernButton}"
+                            <ui:Button Content="💾 Save" Style="{StaticResource ModernButton}"
                                 Background="{DynamicResource AccentGreen}" Click="SaveKeysButton_Click"
                                 ToolTip="Save keys to encrypted config" Margin="5,0,0,0"/>
                         </StackPanel>
@@ -274,7 +274,7 @@
                                                  TextChanged="EncryptInputTextBox_TextChanged"
                                                  KeyDown="EncryptInputTextBox_KeyDown"
                                                  Height="45"/>
-                                        <Button Content="📋" Style="{StaticResource SmallButton}"
+                                        <ui:Button Content="📋" Style="{StaticResource SmallButton}"
                                                 HorizontalAlignment="Right" VerticalAlignment="Center"
                                                 Width="35" Margin="0,5,8,5" Click="EncryptPasteButton_Click"
                                                 ToolTip="Paste from clipboard"/>
@@ -282,11 +282,11 @@
                                 </StackPanel>
 
                                 <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10,0,10">
-                                    <Button Content="🔐 Encrypt" Style="{StaticResource ModernButton}"
+                                    <ui:Button Content="🔐 Encrypt" Style="{StaticResource ModernButton}"
                                             Click="EncryptButton_Click"/>
-                                    <Button Content="Clear" Style="{StaticResource SecondaryButton}"
+                                    <ui:Button Content="Clear" Style="{StaticResource SecondaryButton}"
                                             Click="EncryptClearButton_Click"/>
-                                    <Button x:Name="EncryptFavoriteButton" Content="🏷️" Style="{StaticResource StarButton}"
+                                    <ui:Button x:Name="EncryptFavoriteButton" Content="🏷️" Style="{StaticResource StarButton}"
                                             Click="EncryptFavoriteButton_Click" Margin="10,0,0,0"
                                             ToolTip="Add to bookmarks"/>
                                 </StackPanel>
@@ -331,7 +331,7 @@
                                                  TextChanged="DecryptInputTextBox_TextChanged"
                                                  KeyDown="DecryptInputTextBox_KeyDown"
                                                  Height="45"/>
-                                        <Button Content="📋" Style="{StaticResource SmallButton}"
+                                        <ui:Button Content="📋" Style="{StaticResource SmallButton}"
                                                 HorizontalAlignment="Right" VerticalAlignment="Center"
                                                 Width="35" Margin="0,5,8,5" Click="DecryptPasteButton_Click"
                                                 ToolTip="Paste from clipboard"/>
@@ -339,11 +339,11 @@
                                 </StackPanel>
 
                                 <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10,0,10">
-                                    <Button Content="🔓 Decrypt" Style="{StaticResource ModernButton}"
+                                    <ui:Button Content="🔓 Decrypt" Style="{StaticResource ModernButton}"
                                             Click="DecryptButton_Click"/>
-                                    <Button Content="Clear" Style="{StaticResource SecondaryButton}"
+                                    <ui:Button Content="Clear" Style="{StaticResource SecondaryButton}"
                                             Click="DecryptClearButton_Click"/>
-                                    <Button x:Name="DecryptFavoriteButton" Content="🏷️" Style="{StaticResource StarButton}"
+                                    <ui:Button x:Name="DecryptFavoriteButton" Content="🏷️" Style="{StaticResource StarButton}"
                                             Click="DecryptFavoriteButton_Click" Margin="10,0,0,0"
                                             ToolTip="Add to bookmarks"/>
                                 </StackPanel>
@@ -381,13 +381,13 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Button Style="{StaticResource SmallButton}" 
+                                        <ui:Button Style="{StaticResource SmallButton}" 
                                                 Click="RecentItemButton_Click" Tag="{Binding}"
                                                 MaxWidth="200" ToolTip="{Binding Output}">
                                             <TextBlock Text="{Binding Converter={x:Static local:NoteOrOutputConverter.Instance}}" 
                                                        TextTrimming="CharacterEllipsis" 
                                                        FontFamily="Consolas" FontSize="11"/>
-                                        </Button>
+                                        </ui:Button>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
@@ -441,7 +441,7 @@
                                      IsReadOnly="True" TextAlignment="Center" VerticalContentAlignment="Center"
                                      Text="📥 Drop file here or click Browse..."
                                      Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                            <Button Grid.Column="1" Content="📁 Browse" 
+                            <ui:Button Grid.Column="1" Content="📁 Browse" 
                                     Style="{StaticResource ModernButton}" 
                                     Margin="10,0,0,0" Padding="15,8" Height="45"
                                     Click="BrowseBatchFile_Click"/>
@@ -504,7 +504,7 @@
                                      Text="(auto-generated)"
                                      Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                      TextChanged="BatchOutputPath_TextChanged"/>
-                            <Button Grid.Column="2" Content="📁" 
+                            <ui:Button Grid.Column="2" Content="📁" 
                                     Style="{StaticResource SecondaryButton}" 
                                     Margin="10,0,0,0" Padding="10,5" Width="45" Height="45"
                                     Click="BrowseOutputFile_Click" ToolTip="Choose output location"/>
@@ -567,10 +567,10 @@
                                          TextWrapping="Wrap" IsReadOnly="True"
                                          VerticalScrollBarVisibility="Auto"/>
                                 <StackPanel Grid.Column="1" Orientation="Vertical">
-                                    <Button Content="📋" Style="{StaticResource SecondaryButton}"
+                                    <ui:Button Content="📋" Style="{StaticResource SecondaryButton}"
                                             Margin="0,0,0,5" Padding="8,5"
                                             Click="CopyBatchSummary_Click" ToolTip="Copy summary"/>
-                                    <Button Content="📂" Style="{StaticResource SecondaryButton}"
+                                    <ui:Button Content="📂" Style="{StaticResource SecondaryButton}"
                                             Padding="8,5"
                                             Click="OpenBatchOutputFolder_Click" ToolTip="Open output folder"/>
                                 </StackPanel>
@@ -580,17 +580,17 @@
                         <!-- Action Buttons -->
                         <StackPanel Grid.Row="8" Orientation="Horizontal" 
                                     HorizontalAlignment="Right" Margin="0,15,0,0">
-                            <Button x:Name="BatchResetButton" Content="🧹 Clear" 
+                            <ui:Button x:Name="BatchResetButton" Content="🧹 Clear" 
                                     Style="{StaticResource SecondaryButton}" 
                                     Padding="15,10" Margin="0,0,10,0" Width="130" Height="45"
                                     Click="BatchReset_Click"/>
-                            <Button x:Name="BatchCancelButton" Content="❌ Cancel" 
+                            <ui:Button x:Name="BatchCancelButton" Content="❌ Cancel" 
                                     Style="{StaticResource SecondaryButton}" 
                                     Padding="15,10" Margin="0,0,10,0" Width="130" Height="45"
                                     Foreground="{DynamicResource AccentRed}"
                                     BorderBrush="{DynamicResource AccentRed}" BorderThickness="1"
                                     IsEnabled="False" Click="BatchCancel_Click"/>
-                            <Button x:Name="BatchProcessButton" Content="🔄 Process" 
+                            <ui:Button x:Name="BatchProcessButton" Content="🔄 Process" 
                                     Style="{StaticResource ModernButton}" 
                                     Padding="15,10" Width="130" Height="45" IsEnabled="False"
                                     Click="BatchProcess_Click"/>
@@ -632,7 +632,7 @@
                                            VerticalAlignment="Center"/>
                             </Grid>
 
-                            <Button x:Name="ClearHistoryButton" Grid.Column="2" Content="🧹 Clear History" Style="{StaticResource SecondaryButton}"
+                            <ui:Button x:Name="ClearHistoryButton" Grid.Column="2" Content="🧹 Clear History" Style="{StaticResource SecondaryButton}"
                                     Click="ClearHistoryButton_Click" ToolTip="Delete all history entries (bookmarks preserved)"
                                     Foreground="{DynamicResource AccentRed}"/>
                         </Grid>
@@ -773,7 +773,7 @@
                                 <DataGridTemplateColumn Header="🔖" Width="50" MinWidth="50" MaxWidth="50" CanUserResize="False">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <Button Content="{Binding IsFavorite, Converter={x:Static local:BoolToBookmarkConverter.Instance}}"
+                                            <ui:Button Content="{Binding IsFavorite, Converter={x:Static local:BoolToBookmarkConverter.Instance}}"
                                                     FontSize="11"
                                                     Click="HistoryFavoriteButton_Click"
                                                     Tag="{Binding}">
@@ -789,7 +789,7 @@
                                                         </Style.Triggers>
                                                     </Style>
                                                 </Button.Style>
-                                            </Button>
+                                            </ui:Button>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -797,7 +797,7 @@
                                 <DataGridTemplateColumn Header="📋" Width="50" MinWidth="50" MaxWidth="50" CanUserResize="False">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <Button Content="📋" Style="{StaticResource StarButton}"
+                                            <ui:Button Content="📋" Style="{StaticResource StarButton}"
                                                     FontSize="12"
                                                     Click="HistoryCopyButton_Click" Tag="{Binding}"
                                                     ToolTip="Copy output"/>
@@ -807,7 +807,7 @@
                                 <DataGridTemplateColumn Header="🗑️" Width="50" MinWidth="50" MaxWidth="50" CanUserResize="False">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <Button Content="🗑️" Style="{StaticResource StarButton}"
+                                            <ui:Button Content="🗑️" Style="{StaticResource StarButton}"
                                                     FontSize="12"
                                                     Click="HistoryDeleteButton_Click" Tag="{Binding}"
                                                     ToolTip="Delete this item permanently"/>
@@ -848,7 +848,7 @@
                                            VerticalAlignment="Center"/>
                             </Grid>
 
-                            <Button x:Name="ClearBookmarksButton" Grid.Column="2" Content="🧹 Clear Bookmarks" Style="{StaticResource SecondaryButton}"
+                            <ui:Button x:Name="ClearBookmarksButton" Grid.Column="2" Content="🧹 Clear Bookmarks" Style="{StaticResource SecondaryButton}"
                                     Click="ClearBookmarksButton_Click" ToolTip="Remove all bookmarks"
                                     Foreground="{DynamicResource AccentRed}"/>
                         </Grid>
@@ -973,7 +973,7 @@
                                 <DataGridTemplateColumn Header="🔖" Width="50" MinWidth="50" MaxWidth="50" CanUserResize="False">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <Button Content="{Binding IsFavorite, Converter={x:Static local:BoolToBookmarkConverter.Instance}}"
+                                            <ui:Button Content="{Binding IsFavorite, Converter={x:Static local:BoolToBookmarkConverter.Instance}}"
                                                     FontSize="11"
                                                     Click="HistoryFavoriteButton_Click"
                                                     Tag="{Binding}">
@@ -989,7 +989,7 @@
                                                         </Style.Triggers>
                                                     </Style>
                                                 </Button.Style>
-                                            </Button>
+                                            </ui:Button>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -997,7 +997,7 @@
                                 <DataGridTemplateColumn Header="📋" Width="50" MinWidth="50" MaxWidth="50" CanUserResize="False">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <Button Content="📋" Style="{StaticResource StarButton}"
+                                            <ui:Button Content="📋" Style="{StaticResource StarButton}"
                                                     FontSize="12"
                                                     Click="HistoryCopyButton_Click" Tag="{Binding}"
                                                     ToolTip="Copy output"/>
@@ -1007,7 +1007,7 @@
                                 <DataGridTemplateColumn Header="🗑️" Width="50" MinWidth="50" MaxWidth="50" CanUserResize="False">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <Button Content="🗑️" Style="{StaticResource StarButton}"
+                                            <ui:Button Content="🗑️" Style="{StaticResource StarButton}"
                                                     FontSize="12"
                                                     Click="BookmarksDeleteButton_Click" Tag="{Binding}"
                                                     ToolTip="Remove bookmark"/>
@@ -1044,7 +1044,7 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock x:Name="StatusTextBlock" Text="✓ Ready" FontSize="13"
                            Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
-                <Button Grid.Column="1" Content="⚙️ Settings" Style="{StaticResource SecondaryButton}"
+                <ui:Button Grid.Column="1" Content="⚙️ Settings" Style="{StaticResource SecondaryButton}"
                     Click="SettingsButton_Click" VerticalAlignment="Center" Height="30" Padding="10,0" Margin="10,0,0,0"/>
             </Grid>
         </Border>
