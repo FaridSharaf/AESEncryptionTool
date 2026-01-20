@@ -421,28 +421,55 @@ namespace AESCryptoTool.Services
             
             Wpf.Ui.Appearance.ApplicationThemeManager.Apply(wpfTheme);
 
-            var resources = Application.Current.Resources;
+            // Ensure Application.Current and Resources are available
+            if (Application.Current == null)
+            {
+                Console.WriteLine("Warning: Application.Current is null, theme will be applied when MainWindow loads");
+                return;
+            }
 
-            // Update resource colors
-            resources["PrimaryBg"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.PrimaryBg));
-            resources["SecondaryBg"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.SecondaryBg));
-            resources["CardBg"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.CardBg));
-            resources["RowBg"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.RowBg));
-            resources["HeaderBg"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.HeaderBg));
-            resources["PrimaryAccent"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.PrimaryAccent));
-            resources["AccentBlue"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.AccentBlue));
-            resources["AccentGreen"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.AccentGreen));
-            resources["AccentPurple"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.AccentPurple));
-            resources["AccentOrange"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.AccentOrange));
-            resources["AccentRed"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.AccentRed));
-            resources["AccentYellow"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.AccentYellow));
-            resources["TextPrimary"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.TextPrimary));
-            resources["TextSecondary"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.TextSecondary));
-            resources["TextMuted"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.TextMuted));
-            resources["BorderColor"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.BorderColor));
-            resources["SelectionBg"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(theme.SelectionBg));
+            var resources = Application.Current.Resources;
+            if (resources == null)
+            {
+                Console.WriteLine("Warning: Application resources not available yet");
+                return;
+            }
+
+            // Update resource colors (create new brushes if they don't exist)
+            SetOrCreateBrush(resources, "PrimaryBg", theme.PrimaryBg);
+            SetOrCreateBrush(resources, "SecondaryBg", theme.SecondaryBg);
+            SetOrCreateBrush(resources, "CardBg", theme.CardBg);
+            SetOrCreateBrush(resources, "RowBg", theme.RowBg);
+            SetOrCreateBrush(resources, "HeaderBg", theme.HeaderBg);
+            SetOrCreateBrush(resources, "PrimaryAccent", theme.PrimaryAccent);
+            SetOrCreateBrush(resources, "AccentBlue", theme.AccentBlue);
+            SetOrCreateBrush(resources, "AccentGreen", theme.AccentGreen);
+            SetOrCreateBrush(resources, "AccentPurple", theme.AccentPurple);
+            SetOrCreateBrush(resources, "AccentOrange", theme.AccentOrange);
+            SetOrCreateBrush(resources, "AccentRed", theme.AccentRed);
+            SetOrCreateBrush(resources, "AccentYellow", theme.AccentYellow);
+            SetOrCreateBrush(resources, "TextPrimary", theme.TextPrimary);
+            SetOrCreateBrush(resources, "TextSecondary", theme.TextSecondary);
+            SetOrCreateBrush(resources, "TextMuted", theme.TextMuted);
+            SetOrCreateBrush(resources, "BorderColor", theme.BorderColor);
+            SetOrCreateBrush(resources, "SelectionBg", theme.SelectionBg);
+            
+            // Also set TextOnAccent based on theme category
+            var textOnAccent = theme.Category == "Dark" ? "#FFFFFF" : "#FFFFFF"; // White on dark, white on light accents
+            SetOrCreateBrush(resources, "TextOnAccent", textOnAccent);
 
             SaveSettings(themeName);
+        }
+        
+        private static void SetOrCreateBrush(ResourceDictionary resources, string key, string colorHex)
+        {
+            var color = (Color)ColorConverter.ConvertFromString(colorHex);
+            var brush = new SolidColorBrush(color);
+            
+            if (resources.Contains(key))
+                resources[key] = brush;
+            else
+                resources.Add(key, brush);
         }
 
         public static string LoadSavedTheme()
