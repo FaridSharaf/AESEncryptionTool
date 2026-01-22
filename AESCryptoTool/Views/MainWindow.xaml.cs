@@ -2008,34 +2008,74 @@ namespace AESCryptoTool.Views
             {
                 if (OperationsSection == null) return;
                 
-                DashboardSection.Visibility = Visibility.Collapsed;
-                OperationsSection.Visibility = Visibility.Collapsed;
-                BatchSection.Visibility = Visibility.Collapsed;
-                HistorySection.Visibility = Visibility.Collapsed;
-                BookmarksSection.Visibility = Visibility.Collapsed;
-                SettingsSection.Visibility = Visibility.Collapsed;
+                // Identify target section
+                Grid? targetSection = null;
+                switch (tag)
+                {
+                    case "Dashboard": targetSection = DashboardSection; LoadDashboard(); break;
+                    case "Operations": targetSection = OperationsSection; EncryptInputTextBox.Focus(); break;
+                    case "Batch": targetSection = BatchSection; break;
+                    case "History": targetSection = HistorySection; break;
+                    case "Bookmarks": targetSection = BookmarksSection; break;
+                    case "Settings": targetSection = SettingsSection; break;
+                }
 
+                if (targetSection == null) return;
+
+                // Handle status bar visibility
                 if (StatusBarBorder != null)
                 {
                     StatusBarBorder.Visibility = tag == "Dashboard" ? Visibility.Collapsed : Visibility.Visible;
                 }
 
-                switch (tag)
-                {
-                    case "Dashboard":  
-                        DashboardSection.Visibility = Visibility.Visible; 
-                        LoadDashboard();
-                        break;
-                    case "Operations": 
-                        OperationsSection.Visibility = Visibility.Visible; 
-                        EncryptInputTextBox.Focus();
-                        break;
-                    case "Batch": BatchSection.Visibility = Visibility.Visible; break;
-                    case "History": HistorySection.Visibility = Visibility.Visible; break;
-                    case "Bookmarks": BookmarksSection.Visibility = Visibility.Visible; break;
-                    case "Settings": SettingsSection.Visibility = Visibility.Visible; break;
-                }
+                // Identify currently visible section
+                var sections = new[] { DashboardSection, OperationsSection, BatchSection, HistorySection, BookmarksSection, SettingsSection };
+                var currentSection = sections.FirstOrDefault(s => s != null && s.Visibility == Visibility.Visible && s != targetSection);
+
+                // Animate switch
+                AnimateSectionSwitch(currentSection, targetSection);
             }
+        }
+
+        private void AnimateSectionSwitch(Grid? oldSection, Grid newSection)
+        {
+            if (oldSection == null)
+            {
+                // No old section (first load or direct switch), just show new
+                newSection.Visibility = Visibility.Visible;
+                newSection.Opacity = 1;
+                return;
+            }
+
+            // prevent double animation if quickly clicking
+            if (newSection.Visibility == Visibility.Visible && newSection.Opacity > 0.9) return;
+
+            // 1. Fade Out Old
+            var fadeOut = new System.Windows.Media.Animation.DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(150));
+            fadeOut.Completed += (s, e) =>
+            {
+                oldSection.Visibility = Visibility.Collapsed;
+                oldSection.Opacity = 1; // Reset opacity for next time
+                
+                // 2. Prepare New Section
+                newSection.Opacity = 0;
+                newSection.Visibility = Visibility.Visible;
+                
+                var transform = new TranslateTransform(0, 20);
+                newSection.RenderTransform = transform;
+
+                // 3. Fade In & Slide Up
+                var fadeIn = new System.Windows.Media.Animation.DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(250));
+                var slideUp = new System.Windows.Media.Animation.DoubleAnimation(20, 0, TimeSpan.FromMilliseconds(250))
+                {
+                    EasingFunction = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut }
+                };
+
+                newSection.BeginAnimation(UIElement.OpacityProperty, fadeIn);
+                transform.BeginAnimation(TranslateTransform.YProperty, slideUp);
+            };
+
+            oldSection.BeginAnimation(UIElement.OpacityProperty, fadeOut);
         }
 
 

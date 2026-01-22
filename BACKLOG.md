@@ -6,9 +6,9 @@ Focus: Optimization, Modernization, and UI Polish.
 
 | Feature                   | Category | Effort | Description                                                      |
 | ------------------------- | -------- | ------ | ---------------------------------------------------------------- |
-| **Upgrade to .NET 8**     | Core     | Easy   | Upgrade from .NET 6 for 30% performance boost & longevity.       |
-| **App Size Optimization** | Core     | Easy   | Enable Trimming/Compression to reduce size (160MB -> ~60MB).     |
-| **Material Design UI**    | UI       | Medium | Implement modern Material Design (Cards, Shadows, Ripples).      |
+| **Security Hardening**    | Security | Medium | App Lock (PIN/Pass) & Auto-Lock on inactivity.                   |
+| **Batch Multi-Column**    | Workflow | Medium | "Select Columns" dialog to process multiple fields at once.      |
+| **Command Palette**       | UI       | Medium | Ctrl+K spotlight search for power users.                         |
 | **Multiple Key Profiles** | Workflow | Medium | Save & Switch between different encryption keys (e.g. Dev/Prod). |
 | **Always on Top**         | UI       | Easy   | Button to keep window float on top.                              |
 
@@ -73,7 +73,13 @@ Focus: Optimization, Modernization, and UI Polish.
 
 ---
 
-## ✅ Completed (V1 - V2.2)
+## ✅ Completed (V2.3 - Visual Polish)
+
+- [x] **Page Transitions** (Smooth Fade/Slide)
+- [x] **Empty States** (History/Bookmarks)
+- [x] **Visual Polish** (Cursors, Shadows)
+
+## ✅ Completed (V2.2 - V1.0)
 
 - [x] **Settings Tab Overhaul** (V2.2.2)
 - [x] **Navigation Redesign (Pills)** (V2.2.2)
