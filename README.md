@@ -5,7 +5,7 @@ A modern WPF desktop application for encrypting and decrypting text using **doub
 ![.NET](https://img.shields.io/badge/.NET-8.0-blue)
 ![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Version](https://img.shields.io/badge/Version-2.1-orange)
+![Version](https://img.shields.io/badge/Version-2.3-orange)
 ![Tests](https://img.shields.io/badge/Tests-43%20Passing-brightgreen)
 
 ## ✨ Features
@@ -28,6 +28,9 @@ This provides an extra layer of protection, making brute-force attacks significa
 ### UI & Organization
 
 - **🌊 Deep Ocean Theme** - Modern dark UI with Sky Blue & Teal accents
+- **🖥️ Dashboard** - New landing page with quick actions and stats
+- **🔔 Snackbars** - Non-intrusive notifications for copy/save actions
+- **💬 Modern Dialogs** - Integrated in-window dialogs for errors and confirmations
 - **📑 Tabbed Interface** - Organized into Operations, History, and Bookmarks tabs
 - **🔍 Search** - Search through history and bookmarks
 
@@ -145,7 +148,7 @@ New in V2.2.2: Fully integrated **Settings Tab** with auto-save and card layout.
 
 - **Auto-copy**: Auto-copy results to clipboard
 - **Auto-detect**: Show hints for input type detection
-- **Recent items count**: Items in quick-access bar (Max 20)
+- **Recent Items Limit**: Control how many items appear in quick-access (moved to Storage)
 - **Max History/Bookmarks**: Storage limits (clamps to 1000)
 - **Theme & Font**: Customize accent colors and font face
 - **System Tray**: Minimize/Close to tray options

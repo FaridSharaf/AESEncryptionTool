@@ -2,7 +2,30 @@
 
 # Release Notes
 
-## Version 2.2.2 (Latest)
+## Version 2.3.0 (Latest)
+
+**Modern UI Overhaul & Dashboard**
+
+### 🖥️ Dashboard & Navigation
+
+- **New Dashboard Tab**: A central hub showing usage statistics, quick actions, and key status at a glance.
+- **Simplified Navigation**: Cleaned up the main UI, hiding the Status Bar in favor of modern notifications.
+
+### 💬 Modern Interactions
+
+- **In-Window Dialogs**: Replaced all native "pop-up" Message Boxes with modern, dimming **ContentDialogs** that stay within the app window.
+- **Snackbar Notifications**: Success messages (like "Copied to clipboard") now appear as non-intrusive toast notifications at the bottom.
+
+### ⚙️ Improvements
+
+- **Settings Layout**: Reorganized Settings into clearer sections with "Storage Limits" grouped logically.
+- **Dialog Control**: Enhanced dialogs to have cleaner buttons (unnecessary "Close" buttons hidden where possible).
+- **Flashing Fix**: Resolved an issue where holding the Enter key could trigger rapid-fire error dialogs.
+- **Legacy Cleanup**: Removed significant amounts of legacy code (`CustomMessageBox`, `AppConfig` usage) for better maintainability.
+
+---
+
+## Version 2.2.2
 
 **UI/UX Redesign & Settings Overhaul**
 

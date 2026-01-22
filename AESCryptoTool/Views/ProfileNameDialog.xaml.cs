@@ -21,19 +21,19 @@ namespace AESCryptoTool.Views
             ProfileNameTextBox.Focus();
         }
 
-        private void OkButton_Click(object sender, RoutedEventArgs e)
+        private async void OkButton_Click(object sender, RoutedEventArgs e)
         {
             string input = ProfileNameTextBox.Text.Trim();
 
             if (string.IsNullOrWhiteSpace(input))
             {
-                CustomMessageBox.Show("Please enter a profile name.", "Invalid Input", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await Services.DialogService.WarningAsync("Invalid Input", "Please enter a profile name.");
                 return;
             }
 
             if (_existingNames.Contains(input))
             {
-                CustomMessageBox.Show($"A profile named '{input}' already exists.\nPlease choose a different name.", "Duplicate Name", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await Services.DialogService.WarningAsync("Duplicate Name", $"A profile named '{input}' already exists.\nPlease choose a different name.");
                 return;
             }
 

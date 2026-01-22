@@ -49,7 +49,7 @@ namespace AESCryptoTool.Views
         {
             if (value is HistoryEntry entry)
             {
-                return string.IsNullOrWhiteSpace(entry.Note) ? entry.Output : $"[Note] {entry.Note}";
+                return string.IsNullOrWhiteSpace(entry.Note) ? entry.Output : entry.Note;
             }
             return value?.ToString() ?? "";
         }
@@ -73,6 +73,7 @@ namespace AESCryptoTool.Views
         // Batch processing
         private string? _batchFilePath;
         private CancellationTokenSource? _batchCancellationSource;
+        private bool _isBusy = false;
         // private bool _showingFavoritesOnly = false; // Removed
         
         // Use ObservableCollection to prevent grid resets
@@ -81,11 +82,21 @@ namespace AESCryptoTool.Views
         
         // System Tray
         private System.Windows.Forms.NotifyIcon? _notifyIcon;
+
         private Button? _minimizeButton;
+
+        // Helper properties for Key Profile access
+        private KeyProfile CurrentProfile => _config.Profiles.FirstOrDefault(p => p.Id == _config.SelectedProfileId) 
+                                           ?? _config.Profiles.FirstOrDefault() 
+                                           ?? new KeyProfile();
+        private string CurrentKey => CurrentProfile.Key;
+        private string CurrentIV => CurrentProfile.IV;
 
         public MainWindow()
         {
             InitializeComponent();
+            Services.SnackbarService.Initialize(this.SnackbarPresenter);
+            Services.DialogService.Initialize(this.RootContentDialog);
             
             // Register window command bindings for custom title bar buttons
             CommandBindings.Add(new CommandBinding(SystemCommands.MinimizeWindowCommand, (s, e) => SystemCommands.MinimizeWindow(this)));
@@ -126,8 +137,18 @@ namespace AESCryptoTool.Views
             
             UpdateStatus("✓ Ready - Using double encryption (plaintext keys)");
             
-            // Set focus to Encrypt input by default
-            this.Loaded += (s, e) => EncryptInputTextBox.Focus();
+            // Set focus to Encrypt input by default, or load Dashboard if enabled
+            this.Loaded += (s, e) => 
+            {
+                if (_settings.ShowDashboard)
+                {
+                    LoadDashboard();
+                }
+                else
+                {
+                    EncryptInputTextBox.Focus();
+                }
+            };
         }
 
         private void LoadSettings()
@@ -236,18 +257,18 @@ namespace AESCryptoTool.Views
             }
         }
 
-        private void DeleteProfileButton_Click(object sender, RoutedEventArgs e)
+        private async void DeleteProfileButton_Click(object sender, RoutedEventArgs e)
         {
             if (ProfileComboBox.SelectedItem is KeyProfile profile)
             {
                 if (_config.Profiles.Count <= 1)
                 {
-                    CustomMessageBox.Show("Cannot delete the last profile.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    await Services.DialogService.WarningAsync("Error", "Cannot delete the last profile.");
                     return;
                 }
                 
-                var result = CustomMessageBox.Show($"Are you sure you want to delete profile '{profile.Name}'?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-                if (result == MessageBoxResult.Yes)
+                var result = await Services.DialogService.ConfirmAsync("Confirm Delete", $"Are you sure you want to delete profile '{profile.Name}'?");
+                if (result)
                 {
                     _config.Profiles.Remove(profile);
                      ProfileComboBox.ItemsSource = null;
@@ -283,9 +304,10 @@ namespace AESCryptoTool.Views
             UpdatePinButtonState();
         }
 
-        private void HelpButton_Click(object sender, RoutedEventArgs e)
+        private async void HelpButton_Click(object sender, RoutedEventArgs e)
         {
-            CustomMessageBox.Show(
+            await Services.DialogService.AlertAsync(
+                "About AES Crypto Tool",
                 "AES Crypto Tool v2.2.1\n\n" +
                 "Advanced Encryption Standard (AES-256) utility for secure text and file processing.\n\n" +
                 "Features:\n" +
@@ -294,10 +316,7 @@ namespace AESCryptoTool.Views
                 "• Batch process Excel/CSV files (Encrypt/Decrypt columns)\n" +
                 "• History & Bookmarks for quick access\n" +
                 "• Secure Data Import/Export\n\n" +
-                "Created by Farid Ahmed",
-                "About AES Crypto Tool",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                "Created by Farid Ahmed");
         }
 
         private void PinButton_Click(object sender, RoutedEventArgs e)
@@ -447,26 +466,23 @@ namespace AESCryptoTool.Views
             }
         }
 
-        private void ClearHistoryButton_Click(object sender, RoutedEventArgs e)
+        private async void ClearHistoryButton_Click(object sender, RoutedEventArgs e)
         {
             var selectedItems = HistoryItems.Where(x => x.IsSelected).ToList();
             if (selectedItems.Count > 0)
             {
                 // Batch Delete Selected
                 int count = selectedItems.Count;
-                var result = CustomMessageBox.Show(
-                    $"Are you sure you want to delete {count} selected item(s)?",
+                var result = await Services.DialogService.ConfirmAsync(
                     "Confirm Deletion",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
+                    $"Are you sure you want to delete {count} selected item(s)?");
 
-                if (result == MessageBoxResult.Yes)
+                if (result)
                 {
                     var selectedIds = selectedItems.Select(x => x.Id).ToList();
                     HistoryManager.DeleteHistoryEntries(selectedIds);
                     LoadHistory();
                     UpdateHistoryDeleteButtonState();
-                    // Reset Select All check if needed (handled by logic)
                     UpdateStatus("✓ Selected history entries deleted");
                 }
             }
@@ -475,13 +491,11 @@ namespace AESCryptoTool.Views
                 // Clear All (Existing Logic)
                 if (HistoryItems.Count == 0) return;
 
-                var result = CustomMessageBox.Show(
-                    "Are you sure you want to clear all encryption history?\n(Bookmarks will be preserved)",
+                var result = await Services.DialogService.ConfirmAsync(
                     "Confirm Clear",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning);
+                    "Are you sure you want to clear all encryption history?\n(Bookmarks will be preserved)");
 
-                if (result == MessageBoxResult.Yes)
+                if (result)
                 {
                     HistoryManager.ClearHistory();
                     LoadHistory();
@@ -523,31 +537,24 @@ namespace AESCryptoTool.Views
             }
         }
 
-        private void ClearBookmarksButton_Click(object sender, RoutedEventArgs e)
+        private async void ClearBookmarksButton_Click(object sender, RoutedEventArgs e)
         {
             var selectedItems = BookmarksItems.Where(x => x.IsSelected).ToList();
             if (selectedItems.Count > 0)
             {
                 // Delete Selected
                 int count = selectedItems.Count;
-                var result = CustomMessageBox.Show(
-                    $"Are you sure you want to delete {count} selected bookmark(s)?",
+                var result = await Services.DialogService.ConfirmAsync(
                     "Confirm Deletion",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
+                    $"Are you sure you want to delete {count} selected bookmark(s)?");
 
-                if (result == MessageBoxResult.Yes)
+                if (result)
                 {
                     var selectedIds = selectedItems.Select(x => x.Id).ToList();
                     HistoryManager.DeleteBookmarkEntries(selectedIds);
-                    LoadHistory(); // Assuming this reloads bookmarks via UpdateUI or similar if they share references? 
-                    // Wait, LoadHistory reloads _historyEntries. LoadBookmarks logic needs check.
-                    // Actually MainWindow.cs calls LoadHistory() which refreshes HistoryItems?
-                    // Let's verify LoadHistory method.
-                    // For now, assume LoadHistory() works or call LoadKeys() etc. 
-                    // Actually, BookmarksItems needs refresh.
+                    LoadHistory();
                     UpdateStatus("✓ Selected bookmarks deleted");
-                    LoadHistory(); // This call refreshes both if implemented that way? Check LoadHistory implementation lines 1350+
+                    LoadHistory();
                     UpdateBookmarksDeleteButtonState();
                 }
             }
@@ -556,13 +563,11 @@ namespace AESCryptoTool.Views
                 // Clear All
                 if (BookmarksItems.Count == 0) return;
 
-                var result = CustomMessageBox.Show(
-                    "Are you sure you want to delete ALL bookmarks?",
+                var result = await Services.DialogService.ConfirmAsync(
                     "Confirm Clear",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning);
+                    "Are you sure you want to delete ALL bookmarks?");
 
-                if (result == MessageBoxResult.Yes)
+                if (result)
                 {
                     var allIds = BookmarksItems.Select(x => x.Id).ToList();
                     HistoryManager.DeleteBookmarkEntries(allIds);
@@ -687,12 +692,11 @@ namespace AESCryptoTool.Views
             }
         }
 
-        private void SaveKeysButton_Click(object sender, RoutedEventArgs e)
+        private async void SaveKeysButton_Click(object sender, RoutedEventArgs e)
         {
             if (_keyMasked || _ivMasked)
             {
-                CustomMessageBox.Show("Please show the keys (click 👁️) before saving.", "Keys Hidden", 
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                await Services.DialogService.AlertAsync("Keys Hidden", "Please show the keys (click 👁️) before saving.");
                 return;
             }
 
@@ -703,23 +707,20 @@ namespace AESCryptoTool.Views
 
                 if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(iv))
                 {
-                    CustomMessageBox.Show("Key and IV cannot be empty.", "Validation Error", 
-                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    await Services.DialogService.WarningAsync("Validation Error", "Key and IV cannot be empty.");
                     return;
                 }
 
                 if (!ConfigManager.IsValidPlaintextKey(key))
                 {
                     int byteCount = System.Text.Encoding.UTF8.GetByteCount(key);
-                    CustomMessageBox.Show($"Key must be exactly 16, 24, or 32 characters for AES.\n\nYour key has {byteCount} characters.", 
-                        "Invalid Key", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    await Services.DialogService.WarningAsync("Invalid Key", $"Key must be exactly 16, 24, or 32 characters for AES.\n\nYour key has {byteCount} characters.");
                     return;
                 }
 
                 if (!ConfigManager.IsValidPlaintextIV(iv))
                 {
-                    CustomMessageBox.Show("IV must be exactly 16 characters (bytes).", 
-                        "Invalid IV", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    await Services.DialogService.WarningAsync("Invalid IV", "IV must be exactly 16 characters (bytes).");
                     return;
                 }
 
@@ -738,25 +739,21 @@ namespace AESCryptoTool.Views
                 
                 // _config = ConfigManager.LoadKeys(); // Don't reload, it resets UI state
                 UpdateStatus("✓ Keys saved successfully");
-                CustomMessageBox.Show("Keys saved successfully!", "Success", 
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                await Services.DialogService.AlertAsync("Success", "Keys saved successfully!");
             }
             catch (Exception ex)
             {
-                CustomMessageBox.Show($"Error saving keys: {ex.Message}", "Error", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                await Services.DialogService.ErrorAsync("Error", $"Error saving keys: {ex.Message}");
             }
         }
 
-        private void ResetKeysButton_Click(object sender, RoutedEventArgs e)
+        private async void ResetKeysButton_Click(object sender, RoutedEventArgs e)
         {
-            var result = CustomMessageBox.Show(
-                "This will reset the encryption keys to the default values.\n\nAre you sure?",
+            var result = await Services.DialogService.ConfirmAsync(
                 "Reset Keys",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
+                "This will reset the encryption keys to the default values.\n\nAre you sure?");
 
-            if (result == MessageBoxResult.Yes)
+            if (result)
             {
                 try
                 {
@@ -773,23 +770,20 @@ namespace AESCryptoTool.Views
                     IVTextBox.Text = new string('•', 16);
                     
                     UpdateStatus("✓ Keys reset to default");
-                    CustomMessageBox.Show("Keys have been reset to default values.", "Success", 
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    await Services.DialogService.AlertAsync("Success", "Keys have been reset to default values.");
                 }
                 catch (Exception ex)
                 {
-                    CustomMessageBox.Show($"Error resetting keys: {ex.Message}", "Error", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    await Services.DialogService.ErrorAsync("Error", $"Error resetting keys: {ex.Message}");
                 }
             }
         }
 
-        private void SetDefaultKeysButton_Click(object sender, RoutedEventArgs e)
+        private async void SetDefaultKeysButton_Click(object sender, RoutedEventArgs e)
         {
             if (_keyMasked || _ivMasked)
             {
-                CustomMessageBox.Show("Please show the keys (click 👁️) first to set them as default.", "Keys Hidden", 
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                await Services.DialogService.AlertAsync("Keys Hidden", "Please show the keys (click 👁️) first to set them as default.");
                 return;
             }
 
@@ -798,25 +792,21 @@ namespace AESCryptoTool.Views
 
             if (!ConfigManager.IsValidPlaintextKey(key))
             {
-                CustomMessageBox.Show("Key must be 16, 24, or 32 characters.", "Invalid Key", 
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                await Services.DialogService.WarningAsync("Invalid Key", "Key must be 16, 24, or 32 characters.");
                 return;
             }
 
             if (!ConfigManager.IsValidPlaintextIV(iv))
             {
-                CustomMessageBox.Show("IV must be 16 characters.", "Invalid IV", 
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                await Services.DialogService.WarningAsync("Invalid IV", "IV must be 16 characters.");
                 return;
             }
 
-            var result = CustomMessageBox.Show(
-                "This will set the current keys as the new default.\n\nThe 'Reset' button will restore to these keys in the future.\n\nContinue?",
+            var result = await Services.DialogService.ConfirmAsync(
                 "Set as Default",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
+                "This will set the current keys as the new default.\n\nThe 'Reset' button will restore to these keys in the future.\n\nContinue?");
 
-            if (result == MessageBoxResult.Yes)
+            if (result)
             {
                 try
                 {
@@ -835,13 +825,11 @@ namespace AESCryptoTool.Views
                     ConfigManager.SaveConfiguration(_config);
                     _config = ConfigManager.LoadKeys();
                     UpdateStatus("✓ Keys set as new default");
-                    CustomMessageBox.Show("Current keys are now the default!", "Success", 
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    await Services.DialogService.AlertAsync("Success", "Current keys are now the default!");
                 }
                 catch (Exception ex)
                 {
-                    CustomMessageBox.Show($"Error: {ex.Message}", "Error", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    await Services.DialogService.ErrorAsync("Error", $"Error: {ex.Message}");
                 }
             }
         }
@@ -898,7 +886,7 @@ namespace AESCryptoTool.Views
             }
         }
 
-        private void EncryptButton_Click(object sender, RoutedEventArgs e)
+        private async void EncryptButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -910,7 +898,7 @@ namespace AESCryptoTool.Views
                 }
 
                 // Use double encryption with plaintext keys
-                string encrypted = AESCryptography.Encrypt(input, _config.Key, _config.IV);
+                string encrypted = AESCryptography.Encrypt(input, CurrentKey, CurrentIV);
                 EncryptOutputTextBox.Text = encrypted;
 
                 if (_settings.AutoCopy)
@@ -941,8 +929,7 @@ namespace AESCryptoTool.Views
             catch (Exception ex)
             {
                 UpdateStatus($"✗ Error: {ex.Message}");
-                CustomMessageBox.Show($"Encryption failed: {ex.Message}", "Error", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                await DialogService.ErrorAsync("Error", $"Encryption failed: {ex.Message}");
             }
         }
 
@@ -993,6 +980,7 @@ namespace AESCryptoTool.Views
         {
             if (e.Key == Key.Enter)
             {
+                e.Handled = true;
                 DecryptButton_Click(sender, e);
             }
         }
@@ -1023,11 +1011,15 @@ namespace AESCryptoTool.Views
             }
         }
 
-        private void DecryptButton_Click(object sender, RoutedEventArgs e)
+        private async void DecryptButton_Click(object sender, RoutedEventArgs e)
         {
+            if (_isBusy) return;
+            _isBusy = true;
             try
             {
-                string input = DecryptInputTextBox.Text.Trim();
+                try
+                {
+                    string input = DecryptInputTextBox.Text.Trim();
                 if (string.IsNullOrWhiteSpace(input))
                 {
                     UpdateStatus("⚠ Error: Input is empty");
@@ -1035,7 +1027,7 @@ namespace AESCryptoTool.Views
                 }
 
                 // Use double decryption with plaintext keys
-                string decrypted = AESCryptography.Decrypt(input, _config.Key, _config.IV);
+                string decrypted = AESCryptography.Decrypt(input, CurrentKey, CurrentIV);
                 DecryptOutputTextBox.Text = decrypted;
 
                 if (_settings.AutoCopy)
@@ -1066,8 +1058,12 @@ namespace AESCryptoTool.Views
             catch (Exception ex)
             {
                 UpdateStatus($"✗ Error: {ex.Message}");
-                CustomMessageBox.Show($"Decryption failed: {ex.Message}\n\nMake sure the input is valid encrypted text and the correct keys are configured.", 
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                await DialogService.ErrorAsync("Error", $"Decryption failed: {ex.Message}\n\nMake sure the input is valid encrypted text and the correct keys are configured.");
+            }
+            }
+            finally
+            {
+                _isBusy = false;
             }
         }
 
@@ -1202,17 +1198,15 @@ namespace AESCryptoTool.Views
             }
         }
 
-        private void HistoryDeleteButton_Click(object sender, RoutedEventArgs e)
+        private async void HistoryDeleteButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.Tag is HistoryEntry entry)
             {
-                var result = CustomMessageBox.Show(
-                    $"Delete this entry from HISTORY?\n(It will remain in Bookmarks if bookmarked)\n\nInput: {entry.Input.Substring(0, Math.Min(30, entry.Input.Length))}...",
+                var result = await DialogService.ConfirmAsync(
                     "Confirm Delete",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
+                    $"Delete this entry from HISTORY?\n(It will remain in Bookmarks if bookmarked)\n\nInput: {entry.Input.Substring(0, Math.Min(30, entry.Input.Length))}...");
 
-                if (result == MessageBoxResult.Yes)
+                if (result)
                 {
                     HistoryManager.DeleteFromHistory(entry.Id);
                     RefreshHistory();
@@ -1222,17 +1216,15 @@ namespace AESCryptoTool.Views
             }
         }
 
-        private void BookmarksDeleteButton_Click(object sender, RoutedEventArgs e)
+        private async void BookmarksDeleteButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.Tag is HistoryEntry entry)
             {
-                var result = CustomMessageBox.Show(
-                    $"Remove this bookmark?\n(It will remain in History)\n\nInput: {entry.Input.Substring(0, Math.Min(30, entry.Input.Length))}...",
+                var result = await DialogService.ConfirmAsync(
                     "Confirm Remove Bookmark",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
+                    $"Remove this bookmark?\n(It will remain in History)\n\nInput: {entry.Input.Substring(0, Math.Min(30, entry.Input.Length))}...");
 
-                if (result == MessageBoxResult.Yes)
+                if (result)
                 {
                     HistoryManager.DeleteFromBookmarks(entry.Id);
                     RefreshHistory();
@@ -1513,7 +1505,7 @@ namespace AESCryptoTool.Views
         private void CopyBatchSummary_Click(object sender, RoutedEventArgs e)
         {
             Clipboard.SetText(BatchSummaryText.Text);
-            UpdateStatus("✓ Summary copied to clipboard");
+            Services.SnackbarService.Information("Summary copied to clipboard");
         }
 
         private async void BatchProcess_Click(object sender, RoutedEventArgs e)
@@ -1544,7 +1536,7 @@ namespace AESCryptoTool.Views
             BatchPreviewBorder.Visibility = Visibility.Collapsed; // Hide preview during processing
             _batchCancellationSource = new CancellationTokenSource();
 
-            var processor = new BatchProcessor(_config.Key, _config.IV);
+            var processor = new BatchProcessor(CurrentKey, CurrentIV);
             long lastUpdate = 0;
             processor.ProgressChanged += (current, total, _) =>
             {
@@ -2015,21 +2007,69 @@ namespace AESCryptoTool.Views
             if (sender is System.Windows.Controls.RadioButton rb && rb.Tag is string tag)
             {
                 if (OperationsSection == null) return;
-
+                
+                DashboardSection.Visibility = Visibility.Collapsed;
                 OperationsSection.Visibility = Visibility.Collapsed;
                 BatchSection.Visibility = Visibility.Collapsed;
                 HistorySection.Visibility = Visibility.Collapsed;
                 BookmarksSection.Visibility = Visibility.Collapsed;
                 SettingsSection.Visibility = Visibility.Collapsed;
 
+                if (StatusBarBorder != null)
+                {
+                    StatusBarBorder.Visibility = tag == "Dashboard" ? Visibility.Collapsed : Visibility.Visible;
+                }
+
                 switch (tag)
                 {
-                    case "Operations": OperationsSection.Visibility = Visibility.Visible; break;
+                    case "Dashboard":  
+                        DashboardSection.Visibility = Visibility.Visible; 
+                        LoadDashboard();
+                        break;
+                    case "Operations": 
+                        OperationsSection.Visibility = Visibility.Visible; 
+                        EncryptInputTextBox.Focus();
+                        break;
                     case "Batch": BatchSection.Visibility = Visibility.Visible; break;
                     case "History": HistorySection.Visibility = Visibility.Visible; break;
                     case "Bookmarks": BookmarksSection.Visibility = Visibility.Visible; break;
                     case "Settings": SettingsSection.Visibility = Visibility.Visible; break;
                 }
+            }
+        }
+
+
+
+        private void LoadDashboard()
+        {
+            if (DashboardRecentItemsControl == null) return;
+            var recent = HistoryManager.GetRecentItems(3);
+            DashboardRecentItemsControl.ItemsSource = recent;
+        }
+
+        private void DashboardEncrypt_Click(object sender, RoutedEventArgs e)
+        {
+            NavOperations.IsChecked = true;
+            // Optional: Focus Encrypt Box?
+        }
+
+        private void DashboardDecrypt_Click(object sender, RoutedEventArgs e)
+        {
+            NavOperations.IsChecked = true;
+            DecryptInputTextBox.Focus();
+        }
+
+        private void DashboardBatch_Click(object sender, RoutedEventArgs e)
+        {
+            NavBatch.IsChecked = true;
+        }
+
+        private void DashboardCopy_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Wpf.Ui.Controls.Button btn && btn.Tag is string output)
+            {
+                 Clipboard.SetText(output);
+                 Services.SnackbarService.Information("Copied to clipboard");
             }
         }
 
@@ -2107,9 +2147,34 @@ namespace AESCryptoTool.Views
             // System
             if (MinimizeToTrayCheckBox != null) MinimizeToTrayCheckBox.IsChecked = _settings.MinimizeToTray;
             if (CloseToTrayCheckBox != null) CloseToTrayCheckBox.IsChecked = _settings.CloseToTray;
+            if (MinimizeToTrayCheckBox != null) MinimizeToTrayCheckBox.IsChecked = _settings.MinimizeToTray;
+            if (CloseToTrayCheckBox != null) CloseToTrayCheckBox.IsChecked = _settings.CloseToTray;
             if (AlwaysOnTopCheckBox != null) AlwaysOnTopCheckBox.IsChecked = _settings.AlwaysOnTop;
+            
+            // Dashboard
+            if (ShowDashboardCheckBox != null) ShowDashboardCheckBox.IsChecked = _settings.ShowDashboard;
+            UpdateDashboardVisibility();
 
             _isSettingsInitializing = false;
+        }
+
+        private void UpdateDashboardVisibility()
+        {
+            if (NavDashboard == null) return;
+
+            if (_settings.ShowDashboard)
+            {
+                NavDashboard.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                NavDashboard.Visibility = Visibility.Collapsed;
+                // If we are currently on Dashboard but it's now hidden, switch to Operations
+                if (NavDashboard.IsChecked == true)
+                {
+                    NavOperations.IsChecked = true;
+                }
+            }
         }
 
         private void Setting_Changed(object sender, RoutedEventArgs e)
@@ -2122,6 +2187,11 @@ namespace AESCryptoTool.Views
             {
                 EncryptAutoDetectCheckBox.IsChecked = AutoDetectCheckBox.IsChecked;
                 DecryptAutoDetectCheckBox.IsChecked = AutoDetectCheckBox.IsChecked;
+            }
+            if (sender == ShowDashboardCheckBox)
+            {
+                _settings.ShowDashboard = ShowDashboardCheckBox.IsChecked == true;
+                UpdateDashboardVisibility();
             }
         }
 
